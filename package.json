@@ -4,12 +4,13 @@
 	"author": "Kaibito Young",
 	"files": [
 		"dist",
-		"vendor"
+		"vendor",
+		"bin"
 	],
 	"bin": {
-		"ccbundle": "./dist/bundle.js",
-		"ccimage": "./dist/image.js",
-		"ccrun": "./dist/run.js"
+		"ccbundle": "bin/bundle",
+		"ccimage": "bin/image",
+		"ccrun": "bin/run"
 	},
 	"scripts": {
 		"build": "rm -rf dist && tsc -p tsconfig.json --outDir dist"
