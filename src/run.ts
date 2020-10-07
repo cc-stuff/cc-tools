@@ -8,11 +8,12 @@ import {assertIsString} from "./common/assertIsString";
 
 declare const __LS_ITEMS__: [string, string][];
 
-const PORT = 8080;
-
-const {fs: imageFile, watch} = argv;
+const {fs: imageFile, watch, port} = argv;
 
 assertIsString(imageFile);
+assertIsString(port);
+
+const PORT = parseInt(port) || 8080;
 
 const imageFileAbs = path.isAbsolute(imageFile)
 	? imageFile
@@ -58,7 +59,7 @@ async function initializePage(): Promise<Page> {
 
 async function startServer(): Promise<http.Server> {
 	const server = createServer({
-		root: "./bin/copy-cat",
+		root: path.resolve(__dirname, "./vendor/copy-cat"),
 	});
 
 	server.listen(PORT);
