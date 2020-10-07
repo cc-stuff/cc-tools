@@ -57,11 +57,15 @@ async function initializePage(): Promise<Page> {
 }
 
 async function startServer(): Promise<http.Server> {
+	const root = path.resolve(__dirname, "../vendor/copy-cat");
+
 	const server = createServer({
-		root: path.resolve(__dirname, "./vendor/copy-cat"),
+		root,
 	});
 
 	server.listen(port);
+
+	console.log(`Copy-cat root is ${root}`);
 	console.log(`Listening on http://localhost:${port}`);
 
 	return server;
