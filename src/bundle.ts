@@ -58,7 +58,9 @@ function requireFile(project: Project, parent: File, relativeFileName: string): 
 	const file: File = {
 		source: fs.readFileSync(absPath, 'utf-8'),
 		path: absPath,
-		moduleName: absPath.substring(project.rootDir.length).replace(/\\/g, '/'),
+		moduleName: path
+			.relative(project.rootDir, absPath)
+			.replace(/\\/g, "/"),
 	}
 
 	expandRequires(file, project);
