@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import {argv} from 'yargs';
 import {formatFileSize} from "./common/formatFileSize";
 import {assertIsString} from "./common/assertIsString";
+import {resolvePath} from "./common/resolvePath";
 
 interface FSNodeAttributes {
 	creation: number;
@@ -81,9 +82,7 @@ const {folder, output} = argv;
 assertIsString(folder);
 assertIsString(output);
 
-const rootDir = path.isAbsolute(folder)
-	? folder
-	: path.resolve(process.cwd(), folder);
+const rootDir = resolvePath(folder);
 
 if (fs.existsSync(output)) {
 	fs.unlinkSync(output);

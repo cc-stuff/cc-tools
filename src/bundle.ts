@@ -1,11 +1,18 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import {argv} from 'yargs';
-import * as assert from "assert";
 import {formatFileSize} from "./common/formatFileSize";
 import {assertIsString} from "./common/assertIsString";
+import {resolvePath} from "./common/resolvePath";
+
+interface CCBundleConfig {
+	entry: string;
+	output: string;
+	references?: Record<string, string>;
+}
 
 interface Project {
+	config: CCBundleConfig;
 	rootDir: string;
 	files: Record<string, File>;
 }
@@ -82,36 +89,73 @@ function expandRequires(file: File, project: Project) {
 	file.source = result.join('');
 }
 
-const {entry, output} = argv;
+function bundleProject(projectFile: unknown, entryArg?: unknown, outputArg?: unknown) {
+	// Creating project
+	const project: Project = {
+		config: {
+			entry: "",
+			output: "",
+		},
+		rootDir: process.cwd(),
+		files: {},
+	}
 
-assertIsString(entry);
-assertIsString(output);
+	// Loading the config from the file
+	if (typeof projectFile === "string") {
+		const projectFileAbs = resolvePath(projectFile);
+		const projectRoot = path.dirname(projectFileAbs);
 
-const absEntry = path.isAbsolute(entry)
-	? entry
-	: path.resolve(process.cwd(), entry);
+		project.config = JSON.parse(fs.readFileSync(projectFileAbs, "utf-8"));
+		project.config.entry = resolvePath(project.config.entry, projectRoot);
+		project.config.output = resolvePath(project.config.output, projectRoot);
 
-const project: Project = {
-	rootDir: path.dirname(absEntry),
-	files: {},
+		project.rootDir = path.dirname(project.config.entry);
+	} else {
+		assertIsString(entryArg);
+		assertIsString(outputArg);
+
+		project.config.entry = entryArg;
+		project.config.output = outputArg;
+	}
+
+	// Header stub bile
+	const headerFile: File = {
+		source: '',
+		path: path.resolve(project.rootDir, './__header__'),
+		moduleName: '',
+	}
+
+	// Requiring entry file
+	const entryFile = requireFile(project, headerFile, path.basename(project.config.entry));
+
+	// Creating bundle source
+	const bundleSource = bundleTemplate(
+		Object
+			.values(project.files)
+			.map(file => file.source)
+			.join(''),
+		entryFile.moduleName,
+	);
+
+	// Writing bundle to file
+	fs.writeFileSync(project.config.output, bundleSource, 'utf-8');
+
+	// Bundle size info
+	console.log(
+		`[${path.basename(project.config.output)}] Out bundle: `,
+		formatFileSize(fs.statSync(project.config.output).size),
+	);
+
+	// Bundling child projects
+	if (project.config.references) {
+		for (let reference of Object.values(project.config.references)) {
+			reference = resolvePath(reference, project.rootDir);
+
+			bundleProject(reference);
+		}
+	}
 }
 
-const headerFile: File = {
-	source: '',
-	path: path.resolve(project.rootDir, './__header__'),
-	moduleName: '',
-}
+const {project, entry, output} = argv;
 
-const entryFile = requireFile(project, headerFile, path.basename(absEntry));
-
-const bundleSource = bundleTemplate(
-	Object
-		.values(project.files)
-		.map(file => file.source)
-		.join(''),
-	entryFile.moduleName,
-);
-
-fs.writeFileSync(output, bundleSource, 'utf-8');
-
-console.log('Out bundle: ', formatFileSize(fs.statSync(output).size));
+bundleProject(project, entry, output);

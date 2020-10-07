@@ -6,6 +6,7 @@ import {createServer} from "http-server";
 import * as http from "http";
 import {assertIsString} from "./common/assertIsString";
 import {assertIsNumber} from "./common/assertIsNumber";
+import {resolvePath} from "./common/resolvePath";
 
 declare const __LS_ITEMS__: [string, string][];
 
@@ -14,9 +15,7 @@ const {fs: imageFile, watch, port} = argv;
 assertIsString(imageFile);
 assertIsNumber(port);
 
-const imageFileAbs = path.isAbsolute(imageFile)
-	? imageFile
-	: path.resolve(process.cwd(), imageFile);
+const imageFileAbs = resolvePath(imageFile);
 
 let browserPromise: Promise<Browser>;
 
