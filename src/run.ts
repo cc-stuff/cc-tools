@@ -5,15 +5,14 @@ import {argv} from 'yargs';
 import {createServer} from "http-server";
 import * as http from "http";
 import {assertIsString} from "./common/assertIsString";
+import {assertIsNumber} from "./common/assertIsNumber";
 
 declare const __LS_ITEMS__: [string, string][];
 
 const {fs: imageFile, watch, port} = argv;
 
 assertIsString(imageFile);
-assertIsString(port);
-
-const PORT = parseInt(port) || 8080;
+assertIsNumber(port);
 
 const imageFileAbs = path.isAbsolute(imageFile)
 	? imageFile
@@ -62,7 +61,8 @@ async function startServer(): Promise<http.Server> {
 		root: path.resolve(__dirname, "./vendor/copy-cat"),
 	});
 
-	server.listen(PORT);
+	server.listen(port);
+	console.log(`Listening on http://localhost:${port}`);
 
 	return server;
 }
@@ -73,14 +73,14 @@ async function main() {
 		startServer(),
 	]);
 
-	await page.goto(`http://localhost:${PORT}`);
+	await page.goto(`http://localhost:${port}`);
 
 	if (watch) {
 		fs.watchFile(imageFileAbs, async () => {
 			await page.close();
 			page = await initializePage();
 
-			await page.goto(`http://localhost:${PORT}`);
+			await page.goto(`http://localhost:${port}`);
 		});
 	}
 }
