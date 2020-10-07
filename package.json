@@ -1,6 +1,6 @@
 {
 	"name": "lua-cc-tools",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"author": "Kaibito Young",
 	"files": [
 		"dist",
