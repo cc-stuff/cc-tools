@@ -83,7 +83,7 @@ assertIsString(output);
 
 const rootDir = path.isAbsolute(folder)
 	? folder
-	: path.resolve(__dirname, folder);
+	: path.resolve(process.cwd(), folder);
 
 if (fs.existsSync(output)) {
 	fs.unlinkSync(output);

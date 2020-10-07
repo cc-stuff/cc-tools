@@ -89,7 +89,7 @@ assertIsString(output);
 
 const absEntry = path.isAbsolute(entry)
 	? entry
-	: path.resolve(__dirname, entry);
+	: path.resolve(process.cwd(), entry);
 
 const project: Project = {
 	rootDir: path.dirname(absEntry),

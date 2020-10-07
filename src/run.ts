@@ -16,7 +16,7 @@ assertIsString(imageFile);
 
 const imageFileAbs = path.isAbsolute(imageFile)
 	? imageFile
-	: path.resolve(__dirname, imageFile);
+	: path.resolve(process.cwd(), imageFile);
 
 let browserPromise: Promise<Browser>;
 
