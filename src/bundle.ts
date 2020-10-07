@@ -118,7 +118,7 @@ function bundleProject(projectFile: unknown, entryArg?: unknown, outputArg?: unk
 		project.config.output = outputArg;
 	}
 
-	// Header stub bile
+	// Header stub file
 	const headerFile: File = {
 		source: '',
 		path: path.resolve(project.rootDir, './__header__'),
