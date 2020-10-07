@@ -12,8 +12,7 @@
 		"ccrun": "./dist/run.js"
 	},
 	"scripts": {
-		"build": "rm -rf dist && tsc -p tsconfig.json --outDir dist",
-		"test": "ts-jest --coverage"
+		"build": "rm -rf dist && tsc -p tsconfig.json --outDir dist"
 	},
 	"devDependencies": {
 		"@types/http-server": "^0.10.0",
