@@ -133,10 +133,9 @@ project file.
 ## Testing framework
 
 This toolset also includes a testing framework for ComputerCraft
-applications. It is automatically loaded by [cctest](#cctest) and
-provides a way to describe tests and test suites in a certain way.
+applications. It is automatically loaded by [cctest](#cctest).
 
-If you know [Jest](https://jestjs.io/), this framework can seem
+If you already know [Jest](https://jestjs.io/), this framework may seem
 familiar.
 
 ### Basics
