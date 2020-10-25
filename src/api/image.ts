@@ -104,6 +104,7 @@ export interface PackImageOptions {
 	args?: {
 		folder: string;
 		output: string;
+		noEmit?: boolean;
 	}
 }
 
@@ -111,11 +112,10 @@ export function packImage(options: PackImageOptions) {
 	const {folder, output} = options.args;
 
 	assertIsString(folder);
-	assertIsString(output);
 
 	const rootDir = resolvePath(folder);
 
-	if (fs.existsSync(output)) {
+	if (typeof output === "string" && fs.existsSync(output)) {
 		fs.unlinkSync(output);
 	}
 
@@ -129,28 +129,39 @@ export function packImage(options: PackImageOptions) {
 		children: readDir(rootDir, ".", image),
 	}
 
-	fs.writeFileSync(output, JSON.stringify(flattenImage(image)), "utf-8");
+	const imageOut = JSON.stringify(flattenImage(image));
 
-	console.log('Out image: ', formatFileSize(fs.statSync(output).size));
+	if (!options.args.noEmit) {
+		assertIsString(output);
+
+		fs.writeFileSync(output, imageOut, "utf-8");
+
+		console.log('Out image: ', formatFileSize(fs.statSync(output).size));
+	}
+
+	return imageOut
 }
 
 export interface UnpackImageOptions {
 	args?: {
-		fs: string;
+		fs?: string;
+		image?: string;
 		output: string;
 	}
 }
 
 export function unpackImage(options: UnpackImageOptions) {
-	const {fs: imageFile, output} = options.args;
+	const {fs: imageFile, image, output} = options.args;
 
-	assertIsString(imageFile);
 	assertIsString(output);
 
-	const imageFileAbs = resolvePath(imageFile);
 	const outputAbs = resolvePath(output);
 
-	const flatImage: [string, string][] = JSON.parse(fs.readFileSync(imageFileAbs, "utf-8"));
+	const rawImage = typeof imageFile === "string"
+		? fs.readFileSync(resolvePath(imageFile), "utf-8")
+		: image;
+
+	const flatImage: [string, string][] = JSON.parse(rawImage);
 
 	const extractedCount = writeImage(flatImage, outputAbs);
 

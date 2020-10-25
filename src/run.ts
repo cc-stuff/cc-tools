@@ -3,15 +3,28 @@ import {assertIsString} from "./common/assertIsString";
 import {assertIsNumber} from "./common/assertIsNumber";
 import {run} from "./api";
 
-const {fs: imageFile, watch, port} = argv;
+const {fs: imageFile, folder, watch, port} = argv;
 
-assertIsString(imageFile);
 assertIsNumber(port);
 
-run({
-	args: {
-		fs: imageFile,
-		watch: !!watch,
-		port,
-	}
-}).catch(console.error);
+try {
+	assertIsString(imageFile);
+
+	run({
+		args: {
+			fs: imageFile,
+			watch: !!watch,
+			port,
+		}
+	}).catch(console.error);
+} catch (_) {
+	assertIsString(folder);
+
+	run({
+		args: {
+			folder,
+			watch: !!watch,
+			port,
+		}
+	}).catch(console.error);
+}

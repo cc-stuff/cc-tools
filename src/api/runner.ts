@@ -3,17 +3,17 @@ import * as path from 'path';
 import * as fs from 'fs';
 import {createServer} from "http-server";
 import * as http from "http";
-import {assertIsString} from "../common/assertIsString";
-import {assertIsNumber} from "../common/assertIsNumber";
 import {resolvePath} from "../common/resolvePath";
 import {EventEmitter} from "events";
+import {packImage, unpackImage} from "./image";
 
 declare const __LS_ITEMS__: [string, string][];
 
 interface Context {
 	options: RunOptions;
 	browserPromise?: Promise<Browser>;
-	imageFileAbs: string;
+	imageFileAbs?: string;
+	image?: string;
 	server?: http.Server;
 }
 
@@ -32,10 +32,15 @@ export interface ComputerCraftInstance extends EventEmitter {
 
 	stop(): Promise<void>;
 	waitForStatus(status: "started" | "ended"): Promise<void>;
+	getRawImage(): string;
 }
 
 async function initializePage(context: Context): Promise<ComputerCraftInstance> {
-	const image = JSON.parse(fs.readFileSync(context.imageFileAbs, "utf-8"));
+	const imageSrc = typeof context.imageFileAbs === "string"
+		? fs.readFileSync(context.imageFileAbs, "utf-8")
+		: context.image;
+
+	const image = JSON.parse(imageSrc);
 
 	const browser = await runChromium(context);
 
@@ -121,11 +126,30 @@ ${originalFile === undefined ? "" : atob(originalFile)}
 	const instance: ComputerCraftInstance = new EventEmitter() as ComputerCraftInstance;
 	const server = await startServer(context);
 	let running = true;
+	let outFs;
 
 	(instance as any).page = page;
 
+	// Method to get output contents of the file system
+	instance.getRawImage = () => {
+		return outFs;
+	}
+
 	// Method to stop this instance
 	instance.stop = async () => {
+		// Grab the contents of fiel system
+		outFs = await page.evaluate(function() {
+			const entries: [string, string][] = [];
+
+			for (let i = 0; i < localStorage.length; i++) {
+				const key = localStorage.key(i);
+
+				entries.push([key, localStorage.getItem(key)]);
+			}
+
+			return JSON.stringify(entries);
+		});
+
 		running = false;
 		instance.emit("end");
 
@@ -222,22 +246,51 @@ async function main(context: Context): Promise<ComputerCraftInstance> {
 
 export interface RunOptions {
 	args?: {
-		fs: string;
+		fs?: string;
+		folder?: string;
 		port: number;
 		watch?: boolean;
 	}
 }
 
 export function run(options: RunOptions): Promise<ComputerCraftInstance> {
-	const {fs: imageFile, port} = options.args;
+	const {fs: imageFile, folder} = options.args;
 
-	assertIsString(imageFile);
-	assertIsNumber(port);
+	if (typeof imageFile === "string") {
+		const imageFileAbs = resolvePath(imageFile);
 
-	const imageFileAbs = resolvePath(imageFile);
+		return main({
+			imageFileAbs,
+			options,
+		});
+	} else {
+		const folderAbs = resolvePath(folder);
 
-	return main({
-		imageFileAbs,
-		options,
-	});
+		const image = packImage({
+			args: {
+				folder: folderAbs,
+				output: undefined,
+				noEmit: true,
+			}
+		});
+
+		return main({
+			image,
+			options,
+		}).then(instance => {
+			instance.on("end", () => {
+				const imageRaw = instance.getRawImage();
+
+				// Unpacking the image after the test is sun
+				unpackImage({
+					args: {
+						image: imageRaw,
+						output: folderAbs,
+					}
+				});
+			});
+
+			return instance;
+		})
+	}
 }
