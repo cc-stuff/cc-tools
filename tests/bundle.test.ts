@@ -26,4 +26,18 @@ describe("bundle", () => {
 		).toMatchSnapshot();
 	});
 
+	test("project2 bundling with references", () => {
+		bundleProject({
+			projectFile: "./tests/assets/project2/project.json"
+		});
+
+		expect(
+			fs.readFileSync("./tests/assets/project2/dist/project2.lua", "utf-8")
+		).toMatchSnapshot();
+
+		expect(
+			fs.readFileSync("./tests/assets/project2/dist/validator.lua", "utf-8")
+		).toMatchSnapshot();
+	});
+
 });
