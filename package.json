@@ -10,6 +10,7 @@
 	"bin": {
 		"ccbundle": "bin/bundle",
 		"ccpack": "bin/pack",
+		"ccunpack": "bin/unpack",
 		"ccrun": "bin/run"
 	},
 	"scripts": {
