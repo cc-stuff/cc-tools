@@ -9,7 +9,7 @@
 	],
 	"bin": {
 		"ccbundle": "bin/bundle",
-		"ccimage": "bin/image",
+		"ccpack": "bin/pack",
 		"ccrun": "bin/run"
 	},
 	"scripts": {
