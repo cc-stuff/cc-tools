@@ -1,5 +1,5 @@
 import * as path from 'path';
-import * as fs from 'fs';
+import * as fs from 'fs-extra';
 import {formatFileSize} from "../common/formatFileSize";
 import {assertIsString} from "../common/assertIsString";
 import {resolvePath} from "../common/resolvePath";
@@ -76,6 +76,30 @@ function flattenImage(image: Image): [string, string][] {
 	return result;
 }
 
+function writeImage(flat: [string, string][], outDir: string): number {
+	let extractedCount = 0;
+
+	for (const entry of flat) {
+		const [key, value] = entry;
+
+		const fileName = /^computer\[0]\.files\[(.*)]/.exec(key)[1];
+		const fileNameAbs = resolvePath(fileName, outDir);
+
+		// Forcing the path
+		fs.mkdirpSync(path.dirname(fileNameAbs));
+
+		// Creating a file
+		if (key.endsWith(".b64")) {
+			console.log(`Extracting ${fileNameAbs}`);
+
+			fs.writeFileSync(fileNameAbs, Buffer.from(value, "base64").toString("utf-8"));
+			extractedCount++;
+		}
+	}
+
+	return extractedCount;
+}
+
 export interface PackImageOptions {
 	args?: {
 		folder: string;
@@ -108,4 +132,27 @@ export function packImage(options: PackImageOptions) {
 	fs.writeFileSync(output, JSON.stringify(flattenImage(image)), "utf-8");
 
 	console.log('Out image: ', formatFileSize(fs.statSync(output).size));
+}
+
+export interface UnpackImageOptions {
+	args?: {
+		fs: string;
+		output: string;
+	}
+}
+
+export function unpackImage(options: UnpackImageOptions) {
+	const {fs: imageFile, output} = options.args;
+
+	assertIsString(imageFile);
+	assertIsString(output);
+
+	const imageFileAbs = resolvePath(imageFile);
+	const outputAbs = resolvePath(output);
+
+	const flatImage: [string, string][] = JSON.parse(fs.readFileSync(imageFileAbs, "utf-8"));
+
+	const extractedCount = writeImage(flatImage, outputAbs);
+
+	console.log('Extracted files: ', extractedCount);
 }
