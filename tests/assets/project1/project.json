@@ -1,0 +1,5 @@
+{
+	"entry": "./index.lua",
+	"output": "./dist/project1.lua",
+	"testMatch": "**/*.tests.lua"
+}

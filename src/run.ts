@@ -70,7 +70,7 @@ async function startServer(): Promise<http.Server> {
 	return server;
 }
 
-async function main() {
+export async function main() {
 	let [page] = await Promise.all([
 		initializePage(),
 		startServer(),

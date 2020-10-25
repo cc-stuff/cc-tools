@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`bundle project1 bundling 1`] = `
+"
+local __files__ = {}
+
+local function __require__(name)
+	return __files__[name]
+end
+
+local function __define__(name, impl)
+	__files__[name] = impl()
+end
+
+
+__define__('calc.lua', function ()
+
+local function add(nA, nB)
+    return nA + nB
+end
+
+return {
+    add = add
+}
+
+end)
+
+__define__('index.lua', function ()
+local calc = __require__('calc.lua')
+
+print(calc.add(5, 2))
+
+end)
+
+
+__require__('index.lua')
+"
+`;
