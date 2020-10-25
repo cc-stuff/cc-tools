@@ -116,8 +116,8 @@ function bundleProject(projectFile: unknown, entryArg?: unknown, outputArg?: unk
 		assertIsString(entryArg);
 		assertIsString(outputArg);
 
-		project.config.entry = entryArg;
-		project.config.output = outputArg;
+		project.config.entry = resolvePath(entryArg);
+		project.config.output = resolvePath(outputArg);
 	}
 
 	// Header stub file

@@ -120,15 +120,15 @@ export function bundleProject(options: BundleProjectOptions) {
 		project.config = JSON.parse(fs.readFileSync(projectFileAbs, "utf-8"));
 		project.config.entry = resolvePath(project.config.entry, projectRoot);
 		project.config.output = resolvePath(project.config.output, projectRoot);
-
-		project.rootDir = path.dirname(project.config.entry);
 	} else {
 		assertIsString(entryArg);
 		assertIsString(outputArg);
 
-		project.config.entry = entryArg;
-		project.config.output = outputArg;
+		project.config.entry = resolvePath(entryArg);
+		project.config.output = resolvePath(outputArg);
 	}
+
+	project.rootDir = path.dirname(project.config.entry);
 
 	// Header stub file
 	const headerFile: File = {
