@@ -13,8 +13,7 @@ describe("run", () => {
 
 	afterEach(async () => {
 		await instance.stop();
-		console.log("afterall")
-	})
+	});
 
 	test("run an image", async () => {
 		packImage({
