@@ -141,7 +141,7 @@ function expect(aValue, ...)
         end,
 
         toEqual = function(bValue)
-            local tDiff = diff(toSnapshot(aValue), toSnapshot(bValue))
+            local tDiff = diff(toSnapshot(aValue), toSnapshot(bValue), "\n")
 
             context.assert(tDiff.equals(), "values to match", tDiff)
         end,
