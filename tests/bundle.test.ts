@@ -32,6 +32,17 @@ describe("bundle", () => {
 		).toMatchSnapshot();
 	});
 
+	test("project1 bundling with noEmit", () => {
+		const bundleSource = bundleProject({
+			args: {
+				entry: "./tests/assets/project1/index.lua",
+				noEmit: true,
+			},
+		});
+
+		expect(bundleSource).toMatchSnapshot();
+	});
+
 	test("project2 bundling with references", () => {
 		bundleProject({
 			projectFile: "./tests/assets/project2/project.json"

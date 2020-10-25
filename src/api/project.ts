@@ -94,7 +94,8 @@ export interface BundleProjectOptions {
 	projectFile?: string;
 	args?: {
 		entry: string;
-		output: string;
+		output?: string;
+		noEmit?: boolean;
 	}
 }
 
@@ -122,10 +123,13 @@ export function bundleProject(options: BundleProjectOptions) {
 		project.config.output = resolvePath(project.config.output, projectRoot);
 	} else {
 		assertIsString(entryArg);
-		assertIsString(outputArg);
-
 		project.config.entry = resolvePath(entryArg);
-		project.config.output = resolvePath(outputArg);
+
+		if (!options.args.noEmit) {
+			assertIsString(outputArg);
+
+			project.config.output = resolvePath(outputArg);
+		}
 	}
 
 	project.rootDir = path.dirname(project.config.entry);
@@ -149,14 +153,21 @@ export function bundleProject(options: BundleProjectOptions) {
 		entryFile.moduleName,
 	);
 
-	// Writing bundle to file
-	fs.writeFileSync(project.config.output, bundleSource, 'utf-8');
+	// Validate that it's eiter noEmit or references but never both
+	if (options.args.noEmit && project.config.references) {
+		throw new Error("noEmit can apply only to projects without references")
+	}
 
-	// Bundle size info
-	console.log(
-		`[${path.basename(project.config.output)}] Out bundle: `,
-		formatFileSize(fs.statSync(project.config.output).size),
-	);
+	// Writing bundle to file
+	if (!options.args.noEmit) {
+		fs.writeFileSync(project.config.output, bundleSource, 'utf-8');
+
+		// Bundle size info
+		console.log(
+			`[${path.basename(project.config.output)}] Out bundle: `,
+			formatFileSize(fs.statSync(project.config.output).size),
+		);
+	}
 
 	// Bundling child projects
 	if (project.config.references) {
@@ -166,4 +177,6 @@ export function bundleProject(options: BundleProjectOptions) {
 			bundleProject({projectFile: reference});
 		}
 	}
+
+	return bundleSource;
 }

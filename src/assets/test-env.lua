@@ -7,7 +7,7 @@ if (type(setfenv) ~= "string") then
     end
 end
 
-function toSnapshot(aValue, ...)
+local function toSnapshot(aValue, ...)
     local aResult = ""
 
     if (type(aValue) == "nil") then
@@ -80,15 +80,24 @@ function toSnapshot(aValue, ...)
     end
 end
 
-local function createContext()
+local function createContext(sSuiteName, sTestName)
     local context = {
+        suiteName = sSuiteName,
+        testName = sTestName,
+        totalTests = 0,
+        failedTests = 0,
         output = {}
     }
 
     context.assert = function (bExpression, sText, ...)
         local tDiffList = arg[1]
 
-        local tEntry = { text = sText, fail = false }
+        local tEntry = {
+            suiteName = sSuiteName,
+            testName = sTestName,
+            text = sText,
+            fail = false,
+        }
 
         if (type(tDiffList) == "table") then
             tEntry.diff = tDiffList
@@ -108,7 +117,7 @@ local function createContext()
     return context
 end
 
-local globalContext = createContext()
+local globalContext = createContext("", "")
 local testSuites = {}
 
 function expect(aValue, ...)
@@ -142,7 +151,7 @@ function expect(aValue, ...)
     setmetatable(tExpectResult, {
         __index = function(_, sKey)
             if (sKey == "not") then
-                local tNegativeContext = createContext()
+                local tNegativeContext = createContext(context.suiteName, context.testName)
                 local tResult = {}
 
                 setmetatable(tResult, {
@@ -208,7 +217,23 @@ function describe(sName, fImpl)
         local runAll = function(t)
             for _, f in ipairs(t) do
                 -- TODO: Async function?
-                f()
+                pcall(f)
+            end
+        end
+
+        local runTest = function(tTest)
+            globalContext.totalTests = globalContext.totalTests + 1
+
+            -- TODO: Async function?
+            local bSuccess = pcall(tTest.impl)
+
+            if (not bSuccess) then
+                globalContext.failedTests = globalContext.failedTests + 1
+            end
+
+            -- Copying entries to the global context
+            for _, tEntry in ipairs(tTest.context.output) do
+                table.insert(globalContext.output, tEntry)
             end
         end
 
@@ -221,7 +246,7 @@ function describe(sName, fImpl)
                     -- Running setup
                     runAll(tSuite.beforeEach)
                     -- Running the test
-                    runAll({ tTest.impl })
+                    runTest(tTest)
                     -- Running teardown
                     runAll(tSuite.beforeEach)
                 end
@@ -250,8 +275,24 @@ function describe(sName, fImpl)
         end,
 
         test = function(sTestName, fTestImpl)
+            -- Creating separate context so that each expect would be connected to it's suite and test
+            local tTestContext = createContext(sName, sTestName)
+
+            local tTestConcreteEnv = {
+                expect = function(aValue)
+                    return expect(aValue, tTestContext)
+                end
+            }
+
+            setmetatable(tTestConcreteEnv, {
+                __index = _ENV
+            })
+
+            setfenv(fTestImpl, tTestConcreteEnv)
+
             table.insert(tSuite.tests, {
                 name = sTestName,
+                context = tTestContext,
                 impl = fTestImpl
             })
         end,
