@@ -17,16 +17,23 @@ if (suitsGrep !== undefined) {
 assertIsString(testsGrep);
 assertIsString(suitsGrep);
 
+const outputLines: string[] = [];
+
 test({
+	outputLines,
 	args: {
 		project,
 		testsGrep,
 		suitsGrep,
 	},
-}).then(output => {
-	for (const line of output) {
+}).then(() => {
+	for (const line of outputLines) {
 		process.stdout.write(line + "\n");
 	}
 }).catch(error => {
+	for (const line of outputLines) {
+		process.stdout.write(line + "\n");
+	}
+
 	console.error(error);
 })

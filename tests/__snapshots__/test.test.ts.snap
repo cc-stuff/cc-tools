@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`test run all tests 1`] = `
+Array [
+  "[41m[37mFAIL[39m[49m ",
+  "[1m[31m    • [39m[22m",
+  "[31mtable: 96585063 to be falsy[39m",
+  "",
+  "[42m[37mPASS[39m[49m [32mBasic[39m",
+  "[42m[37mPASS[39m[49m [32mTable equality[39m",
+  "",
+  "Total tests: 6",
+  "Failed tests: 0",
+]
+`;

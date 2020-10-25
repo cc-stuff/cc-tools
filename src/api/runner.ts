@@ -59,6 +59,8 @@ cctools.start = function()
 	end
 
 	cctools.finish = function()
+		os.startTimer(1)
+		os.pullEvent()
 		writeCommand("ended")
 	end
 

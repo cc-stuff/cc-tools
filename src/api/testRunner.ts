@@ -35,6 +35,7 @@ interface TestResultContext {
 }
 
 export interface TestOptions {
+	outputLines?: string[];
 	args?: {
 		project: string;
 		testsGrep?: string;
@@ -43,7 +44,7 @@ export interface TestOptions {
 }
 
 function randomPort(): number {
-	return Math.round(Math.random() * 10000 - 5000);
+	return 5000 + Math.round(Math.random() * 5000);
 }
 
 function displayTests(output: TestOutput): string[] {
@@ -111,7 +112,7 @@ function displayTests(output: TestOutput): string[] {
 export async function test(options: TestOptions) {
 	const projectAbs = resolvePath(options.args.project);
 	const projectRoot = path.dirname(projectAbs);
-	let outputLines: string[] = [];
+	let outputLines: string[] = options.outputLines ?? [];
 
 	// Loading project json
 	const testProject: TestProject = JSON.parse(fs.readFileSync(projectAbs, "utf-8"));
@@ -123,12 +124,14 @@ export async function test(options: TestOptions) {
 	const startupFileName = path.join(projectRoot, "startup.lua");
 	const commandFileName = path.join(projectRoot, ".command.json");
 	const outputFileName = path.join(projectRoot, ".output.json");
+	const statusFileName = path.join(projectRoot, ".ccstatus");
 
 	if (fs.existsSync(startupFileName)) {
-		throw new Error("No startup.lua in tests root allowed. Please rename it to startup.")
+		throw new Error("No startup.lua in tests root allowed.")
 	}
 
-	const filesToDeleteAbs: string[] = [startupFileName, commandFileName, outputFileName];
+	const filesToDeleteAbs: string[] = [startupFileName, commandFileName, outputFileName, statusFileName];
+	const filesWithTests: string[] = [];
 
 	// Helper to remove temporary bundles
 	function removeTempBundles() {
@@ -152,6 +155,7 @@ export async function test(options: TestOptions) {
 				const entryOut = entryAbs + ".tmp.bundle";
 
 				filesToDeleteAbs.push(entryOut);
+				filesWithTests.push(entryOut.replace(projectRoot, ""))
 
 				bundleProject({
 					args: {
@@ -174,7 +178,7 @@ export async function test(options: TestOptions) {
 		fs.writeFileSync(commandFileName, JSON.stringify({
 			suitsGrep: options.args.suitsGrep ?? ".*",
 			testsGrep: options.args.testsGrep ?? ".*",
-			files: filesToDeleteAbs.map(f => f.replace(projectRoot, "")),
+			files: filesWithTests,
 		}));
 
 		// Running tests
@@ -204,6 +208,10 @@ export async function test(options: TestOptions) {
 		outputLines.push("");
 		outputLines.push(`Total tests: ${testResult.totalTests}`);
 		outputLines.push(`Failed tests: ${testResult.failedTests}`);
+
+		if (testResult.failedTests > 0) {
+			throw new Error(`${testResult.failedTests} tests failed.`);
+		}
 	} catch (error) {
 		removeTempBundles();
 

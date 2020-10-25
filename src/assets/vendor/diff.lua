@@ -219,6 +219,16 @@ local function diff(old, new, separator)
     diff.to_html = format_as_html
     diff.equals = function() return bEquals end
 
+    diff.toPureTable = function()
+        local tResult = {}
+
+        for _, tEntry in ipairs(diff) do
+            table.insert(tResult, tEntry)
+        end
+
+        return tResult
+    end
+
     return diff
 end
 

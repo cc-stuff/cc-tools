@@ -1,7 +1,9 @@
 local diff = require "./vendor/diff"
 
 -- setfenv polyfill
-if (type(setfenv) ~= "string") then
+if (type(setfenv) ~= "function") then
+    print("Using setfenv polyfill ...")
+
     setfenv = function (f, tEnv)
         return load(string.dump(f), nil, nil, tEnv)
     end
@@ -22,7 +24,7 @@ local function toSnapshot(aValue, ...)
         (type(aValue) == "userdata") or
         (type(aValue) == "thread")
     ) then
-        aResult = toString(aValue)
+        aResult = tostring(aValue)
     elseif (type(aValue) == "table") then
         local tKeys = {}
         local tResultLines = {}
@@ -89,6 +91,16 @@ local function createContext(sSuiteName, sTestName)
         output = {}
     }
 
+    context.toJSON = function()
+        return textutils.serializeJSON({
+            suiteName = context.suiteName,
+            testName = context.testName,
+            totalTests = context.totalTests,
+            failedTests = context.failedTests,
+            output = context.output,
+        })
+    end
+
     context.assert = function (bExpression, sText, ...)
         local tDiffList = arg[1]
 
@@ -100,7 +112,7 @@ local function createContext(sSuiteName, sTestName)
         }
 
         if (type(tDiffList) == "table") then
-            tEntry.diff = tDiffList
+            tEntry.diff = tDiffList.toPureTable()
         end
 
         if (not bExpression) then
@@ -150,7 +162,7 @@ function expect(aValue, ...)
     -- Setting up the negated table
     setmetatable(tExpectResult, {
         __index = function(_, sKey)
-            if (sKey == "not") then
+            if (sKey == "toNot") then
                 local tNegativeContext = createContext(context.suiteName, context.testName)
                 local tResult = {}
 
@@ -180,6 +192,8 @@ function expect(aValue, ...)
                         end
                     end
                 })
+
+                return tResult
             end
 
             return rawget(_, sKey)
@@ -204,6 +218,8 @@ function describe(sName, fImpl)
     tSuite.grep = function(sMatch)
         local tMatchedNames = {}
 
+        print("Total tests in suite: " ..tostring(#tSuite.tests))
+
         for _, tTest in ipairs(tSuite.tests) do
             if (string.match(tTest.name, sMatch)) then
                 table.insert(tMatchedNames, tTest.name)
@@ -213,7 +229,7 @@ function describe(sName, fImpl)
         return tMatchedNames
     end
 
-    tSuite.run = function(...)
+    tSuite.run = function(tArg)
         local runAll = function(t)
             for _, f in ipairs(t) do
                 -- TODO: Async function?
@@ -225,10 +241,22 @@ function describe(sName, fImpl)
             globalContext.totalTests = globalContext.totalTests + 1
 
             -- TODO: Async function?
-            local bSuccess = pcall(tTest.impl)
+            local bSuccess, sError = pcall(tTest.impl)
 
             if (not bSuccess) then
                 globalContext.failedTests = globalContext.failedTests + 1
+
+                local aTextColor = term.getTextColor()
+                term.setTextColor(colors.red)
+                print("Error in test:", sError)
+                term.setTextColor(aTextColor)
+
+                table.insert(globalContext.output, {
+                    suiteName = sName,
+                    testName = tTest.name,
+                    fail = true,
+                    text = sError,
+                })
             end
 
             -- Copying entries to the global context
@@ -240,7 +268,7 @@ function describe(sName, fImpl)
         -- Running suite setup
         runAll(tSuite.beforeAll)
 
-        for _1, sName in ipairs(arg) do
+        for _1, sName in ipairs(tArg) do
             for _2, tTest in ipairs(tSuite.tests) do
                 if (tTest.name == sName) then
                     -- Running setup
@@ -303,32 +331,43 @@ function describe(sName, fImpl)
     })
 
     setfenv(fImpl, tTestEnv)
+    pcall(fImpl)
 
     table.insert(testSuites, tSuite)
 end
 
 local function grep(sSuiteMatch, sTestMatch)
+    print("Looking for suites that match " .. sSuiteMatch)
+
     local tMatches = {}
+    local nSuiteCount = 0
+    local nTestCount = 0
 
     for _, tSuite in ipairs(testSuites) do
         if (string.match(tSuite.name, sSuiteMatch)) then
+            print("Looking for tests that match " .. sTestMatch)
+            nSuiteCount = nSuiteCount + 1
+
             local tMatchedTestNames = tSuite.grep(sTestMatch)
+            nTestCount = nTestCount + #tMatchedTestNames
 
             table.insert(tMatches, { tSuite.name, tMatchedTestNames })
         end
     end
 
+    print("Found " .. tostring(nSuiteCount) .. " suites with " .. tostring(nTestCount) .. " tests")
+
     return tMatches
 end
 
-local function run(...)
-    for _1, tSuiteTestsPair in ipairs(arg) do
+local function run(tArg)
+    for _1, tSuiteTestsPair in ipairs(tArg) do
         local sName, tTestNames = table.unpack(tSuiteTestsPair)
 
         for _2, tSuite in ipairs(testSuites) do
             if (tSuite.name == sName) then
                 -- Running the tests in this suite
-                tSuite.run(table.unpack(tTestNames))
+                tSuite.run(tTestNames)
             end
         end
     end

@@ -8,6 +8,8 @@ local tCommand = textutils.unserializeJSON(sCommandRaw)
 
 -- Initializing the tests
 for _1, sFile in ipairs(tCommand.files) do
+    print("Running tests in " .. sFile .. " ...")
+
     os.run({
         describe = describe,
         expect = expect,
@@ -21,9 +23,13 @@ local tSuiteNames = testEnv.grep(tCommand.suitsGrep, tCommand.testsGrep)
 pcall(testEnv.run, tSuiteNames)
 
 -- Write output to file
+print("Finalizing...")
+
 local tOutputFile = fs.open(".output.json", "w")
-tOutputFile.write(textutils.serializeJSON(testEnv.globalContext))
+tOutputFile.write(testEnv.globalContext.toJSON())
 tOutputFile.close()
+
+print("Done")
 
 -- Close the emulator
 cctools.finish();
