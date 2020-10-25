@@ -101,7 +101,7 @@ export interface BundleProjectOptions {
 
 export function bundleProject(options: BundleProjectOptions) {
 	const {projectFile} = options;
-	const {entry: entryArg, output: outputArg} = options.args ?? {};
+	const {entry: entryArg, output: outputArg, noEmit} = options.args ?? {};
 
 	// Creating project
 	const project: Project = {
@@ -125,7 +125,7 @@ export function bundleProject(options: BundleProjectOptions) {
 		assertIsString(entryArg);
 		project.config.entry = resolvePath(entryArg);
 
-		if (!options.args.noEmit) {
+		if (!noEmit) {
 			assertIsString(outputArg);
 
 			project.config.output = resolvePath(outputArg);
@@ -154,12 +154,12 @@ export function bundleProject(options: BundleProjectOptions) {
 	);
 
 	// Validate that it's eiter noEmit or references but never both
-	if (options.args.noEmit && project.config.references) {
+	if (noEmit && project.config.references) {
 		throw new Error("noEmit can apply only to projects without references")
 	}
 
 	// Writing bundle to file
-	if (!options.args.noEmit) {
+	if (!noEmit) {
 		fs.writeFileSync(project.config.output, bundleSource, 'utf-8');
 
 		// Bundle size info

@@ -11,7 +11,8 @@
 		"ccbundle": "bin/bundle",
 		"ccpack": "bin/pack",
 		"ccunpack": "bin/unpack",
-		"ccrun": "bin/run"
+		"ccrun": "bin/run",
+		"cctest": "bin/test"
 	},
 	"scripts": {
 		"build": "rm -rf dist && tsc -p tsconfig.json --outDir dist",
