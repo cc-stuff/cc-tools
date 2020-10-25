@@ -1,7 +1,13 @@
 import * as fs from "fs";
 import {bundleProject} from "../src/api";
+import {clearDist} from "./utils";
 
 describe("bundle", () => {
+
+	beforeEach(() => {
+		clearDist("./tests/assets/project1/dist")
+		clearDist("./tests/assets/project2/dist")
+	});
 
 	test("project1 bundling", () => {
 		bundleProject({
