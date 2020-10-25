@@ -1,6 +1,6 @@
 export {BundleProjectOptions, bundleProject} from "./project";
 export {PackImageOptions, packImage} from "./image";
-export {RunOptions, run} from "./runner";
+export {RunOptions, ComputerCraftInstance, run} from "./runner";
 
 export interface UnpackImageOptions {
 	args?: {
