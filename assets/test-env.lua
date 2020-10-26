@@ -31,26 +31,47 @@ function toSnapshot(aValue, ...)
     ) then
         aResult = tostring(aValue)
     elseif (type(aValue) == "table") then
-        local tKeys = {}
+        local tStringKeys = {}
+        local tNumberKeys = {}
         local tResultLines = {}
 
         -- Reading all keys from the table
-        for sKey in pairs(aValue) do
-            table.insert(tKeys, sKey)
+        for aKey in pairs(aValue) do
+            if (type(aKey) == "number") then
+                table.insert(tNumberKeys, aKey)
+            else
+                table.insert(tStringKeys, aKey)
+            end
         end
 
         -- Sorting keys alphabetically
-        table.sort(tKeys)
+        table.sort(tStringKeys)
+        table.sort(tNumberKeys)
 
         table.insert(tResultLines, "{")
 
-        for _, sKey in ipairs(tKeys) do
+        -- Iterating over numeric keys
+        for _, nKey in ipairs(tNumberKeys) do
+            -- Inserting new line with key/value
+            local tValueLines = toSnapshot(aValue[nKey], true)
+
+            for i, sValueLine in ipairs(tValueLines) do
+                if (i == 1) then
+                    table.insert(tResultLines, '\t[' .. nKey .. '] = ' .. sValueLine)
+                else
+                    table.insert(tResultLines, "\t" .. sValueLine)
+                end
+            end
+        end
+
+        -- Iterating over string keys
+        for _, sKey in ipairs(tStringKeys) do
             -- Inserting new line with key/value
             local tValueLines = toSnapshot(aValue[sKey], true)
 
             for i, sValueLine in ipairs(tValueLines) do
                 if (i == 1) then
-                    table.insert(tResultLines, '\t"' .. sKey .. '" = ' .. sValueLine)
+                    table.insert(tResultLines, '\t["' .. sKey .. '"] = ' .. sValueLine)
                 else
                     table.insert(tResultLines, "\t" .. sValueLine)
                 end

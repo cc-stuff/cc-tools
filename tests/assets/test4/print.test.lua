@@ -18,5 +18,11 @@ describe("Print", function()
         }))
     end)
 
+    test("print toSnapshot mixed", function()
+        print(toSnapshot({
+            1, 2, string = "str", 5
+        }))
+    end)
+
 end)
 
