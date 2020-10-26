@@ -217,6 +217,8 @@ export async function test(options: TestOptions) {
 		outputLines.push(`Total tests: ${testResult.totalTests}`);
 		outputLines.push(`Failed tests: ${testResult.failedTests}`);
 
+		debugger;
+
 		if (testResult.failedTests > 0) {
 			throw new Error(`${testResult.failedTests} tests failed.`);
 		}
