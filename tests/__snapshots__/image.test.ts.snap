@@ -1,0 +1,139 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`image image1 pack 1`] = `
+Array [
+  Array [
+    "computer[0].files[dummy.txt].attributes",
+    "{\\"creation\\":1580504400000,\\"modification\\":1580504400000}",
+  ],
+  Array [
+    "computer[0].files[dummy.txt].b64",
+    "\\"SGVsbG8hDQpJJ20gYSBkdW1teSBmaWxlDQo=\\"",
+  ],
+  Array [
+    "computer[0].files[subfolder/a/number.txt].attributes",
+    "{\\"creation\\":1580504400000,\\"modification\\":1580504400000}",
+  ],
+  Array [
+    "computer[0].files[subfolder/a/number.txt].b64",
+    "\\"MTIzNDUNCg==\\"",
+  ],
+  Array [
+    "computer[0].files[subfolder/a].attributes",
+    "{\\"creation\\":1580504400000,\\"modification\\":1580504400000}",
+  ],
+  Array [
+    "computer[0].files[subfolder/a].children",
+    "[\\"number.txt\\"]",
+  ],
+  Array [
+    "computer[0].files[subfolder/b/number.txt].attributes",
+    "{\\"creation\\":1580504400000,\\"modification\\":1580504400000}",
+  ],
+  Array [
+    "computer[0].files[subfolder/b/number.txt].b64",
+    "\\"MTIzNDUNCg==\\"",
+  ],
+  Array [
+    "computer[0].files[subfolder/b/string.txt].attributes",
+    "{\\"creation\\":1580504400000,\\"modification\\":1580504400000}",
+  ],
+  Array [
+    "computer[0].files[subfolder/b/string.txt].b64",
+    "\\"YWJjZGUNCg==\\"",
+  ],
+  Array [
+    "computer[0].files[subfolder/b].attributes",
+    "{\\"creation\\":1580504400000,\\"modification\\":1580504400000}",
+  ],
+  Array [
+    "computer[0].files[subfolder/b].children",
+    "[\\"number.txt\\",\\"string.txt\\"]",
+  ],
+  Array [
+    "computer[0].files[subfolder].attributes",
+    "{\\"creation\\":1580504400000,\\"modification\\":1580504400000}",
+  ],
+  Array [
+    "computer[0].files[subfolder].children",
+    "[\\"a\\",\\"b\\"]",
+  ],
+  Array [
+    "computer[0].files[].attributes",
+    "{\\"creation\\":0,\\"modification\\":0}",
+  ],
+  Array [
+    "computer[0].files[].children",
+    "[\\"dummy.txt\\",\\"subfolder\\"]",
+  ],
+]
+`;
+
+exports[`image image1 pack over existing file 1`] = `
+Array [
+  Array [
+    "computer[0].files[dummy.txt].attributes",
+    "{\\"creation\\":1580504400000,\\"modification\\":1580504400000}",
+  ],
+  Array [
+    "computer[0].files[dummy.txt].b64",
+    "\\"SGVsbG8hDQpJJ20gYSBkdW1teSBmaWxlDQo=\\"",
+  ],
+  Array [
+    "computer[0].files[subfolder/a/number.txt].attributes",
+    "{\\"creation\\":1580504400000,\\"modification\\":1580504400000}",
+  ],
+  Array [
+    "computer[0].files[subfolder/a/number.txt].b64",
+    "\\"MTIzNDUNCg==\\"",
+  ],
+  Array [
+    "computer[0].files[subfolder/a].attributes",
+    "{\\"creation\\":1580504400000,\\"modification\\":1580504400000}",
+  ],
+  Array [
+    "computer[0].files[subfolder/a].children",
+    "[\\"number.txt\\"]",
+  ],
+  Array [
+    "computer[0].files[subfolder/b/number.txt].attributes",
+    "{\\"creation\\":1580504400000,\\"modification\\":1580504400000}",
+  ],
+  Array [
+    "computer[0].files[subfolder/b/number.txt].b64",
+    "\\"MTIzNDUNCg==\\"",
+  ],
+  Array [
+    "computer[0].files[subfolder/b/string.txt].attributes",
+    "{\\"creation\\":1580504400000,\\"modification\\":1580504400000}",
+  ],
+  Array [
+    "computer[0].files[subfolder/b/string.txt].b64",
+    "\\"YWJjZGUNCg==\\"",
+  ],
+  Array [
+    "computer[0].files[subfolder/b].attributes",
+    "{\\"creation\\":1580504400000,\\"modification\\":1580504400000}",
+  ],
+  Array [
+    "computer[0].files[subfolder/b].children",
+    "[\\"number.txt\\",\\"string.txt\\"]",
+  ],
+  Array [
+    "computer[0].files[subfolder].attributes",
+    "{\\"creation\\":1580504400000,\\"modification\\":1580504400000}",
+  ],
+  Array [
+    "computer[0].files[subfolder].children",
+    "[\\"a\\",\\"b\\"]",
+  ],
+  Array [
+    "computer[0].files[].attributes",
+    "{\\"creation\\":0,\\"modification\\":0}",
+  ],
+  Array [
+    "computer[0].files[].children",
+    "[\\"dummy.txt\\",\\"subfolder\\"]",
+  ],
+]
+`;

@@ -1,0 +1,54 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`test run all tests 1`] = `
+Array [
+  "[42m[37mPASS[39m[49m [32mBasic[39m",
+  "[42m[37mPASS[39m[49m [32mTable equality[39m",
+  "",
+  "Total tests: 9",
+  "Failed tests: 0",
+]
+`;
+
+exports[`test run all tests 2`] = `undefined`;
+
+exports[`test run all tests that fail 1`] = `
+Array [
+  "[41m[37mFAIL[39m[49m [31mFailures[39m",
+  "[1m[31m    • not to be falsy[39m[22m",
+  "[31mnot expecting false to be falsy[39m",
+  "",
+  "[1m[31m    • not to be nil[39m[22m",
+  "[31mnot expecting nil to be nil[39m",
+  "",
+  "[1m[31m    • tables equal[39m[22m",
+  "[31mexpecting values to match[39m",
+  "",
+  "{	\\"number\\" = 2	\\"subtable\\" = {		\\"a\\" = true",
+  "[31m[-] 	}[39m",
+  "[32m[+] 		\\"b\\" = false[39m",
+  "",
+  "[31m[-] 	\\"text\\" = \\"2\\"[39m",
+  "[32m[+] 	}[39m",
+  "[32m[+] [39m",
+  "[32m[+] 	\\"text\\" = \\"3\\"[39m",
+  "}",
+  "[1m[31m    • to be[39m[22m",
+  "[31mexpecting 2 to be 4[39m",
+  "",
+  "[1m[31m    • to be falsy[39m[22m",
+  "[31mexpecting true to be falsy[39m",
+  "",
+  "[1m[31m    • to be nil[39m[22m",
+  "[31mexpecting true to be nil[39m",
+  "",
+  "[1m[31m    • to be truthy[39m[22m",
+  "[31mexpecting false to be truthy[39m",
+  "",
+  "",
+  "Total tests: 7",
+  "Failed tests: 7",
+]
+`;
+
+exports[`test run all tests that fail 2`] = `[Error: 7 tests failed.]`;

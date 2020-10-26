@@ -1,0 +1,4 @@
+{
+	"entry": "./index.lua",
+	"output": "../dist/validator.lua"
+}

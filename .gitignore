@@ -1,3 +1,6 @@
 .idea
-node_modules
-dist
+node_modules/
+dist/
+tmp/
+coverage/
+__diff_output__/

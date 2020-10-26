@@ -1,0 +1,177 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`bundle project1 bundling 1`] = `
+"
+local __files__ = {}
+
+local function __require__(name)
+	return __files__[name]
+end
+
+local function __define__(name, impl)
+	__files__[name] = impl()
+end
+
+
+__define__('calc.lua', function ()
+
+local function add(nA, nB)
+    return nA + nB
+end
+
+return {
+    add = add
+}
+
+end)
+
+__define__('index.lua', function ()
+local calc = __require__('calc.lua')
+local calc2 = __require__('calc.lua')
+
+print(calc.add(5, 2))
+
+end)
+
+
+__require__('index.lua')
+"
+`;
+
+exports[`bundle project1 bundling with explicit args 1`] = `
+"
+local __files__ = {}
+
+local function __require__(name)
+	return __files__[name]
+end
+
+local function __define__(name, impl)
+	__files__[name] = impl()
+end
+
+
+__define__('calc.lua', function ()
+
+local function add(nA, nB)
+    return nA + nB
+end
+
+return {
+    add = add
+}
+
+end)
+
+__define__('index.lua', function ()
+local calc = __require__('calc.lua')
+local calc2 = __require__('calc.lua')
+
+print(calc.add(5, 2))
+
+end)
+
+
+__require__('index.lua')
+"
+`;
+
+exports[`bundle project1 bundling with noEmit 1`] = `
+"
+local __files__ = {}
+
+local function __require__(name)
+	return __files__[name]
+end
+
+local function __define__(name, impl)
+	__files__[name] = impl()
+end
+
+
+__define__('calc.lua', function ()
+
+local function add(nA, nB)
+    return nA + nB
+end
+
+return {
+    add = add
+}
+
+end)
+
+__define__('index.lua', function ()
+local calc = __require__('calc.lua')
+local calc2 = __require__('calc.lua')
+
+print(calc.add(5, 2))
+
+end)
+
+
+__require__('index.lua')
+"
+`;
+
+exports[`bundle project2 bundling with references 1`] = `
+"
+local __files__ = {}
+
+local function __require__(name)
+	return __files__[name]
+end
+
+local function __define__(name, impl)
+	__files__[name] = impl()
+end
+
+
+__define__('index.lua', function ()
+print(\\"It works!\\")
+
+end)
+
+
+__require__('index.lua')
+"
+`;
+
+exports[`bundle project2 bundling with references 2`] = `
+"
+local __files__ = {}
+
+local function __require__(name)
+	return __files__[name]
+end
+
+local function __define__(name, impl)
+	__files__[name] = impl()
+end
+
+
+__define__('is-number.lua', function ()
+
+local function isNumber(a)
+    return type(a) == \\"number\\"
+end
+
+return isNumber
+
+end)
+
+__define__('index.lua', function ()
+local isNumber = __require__('is-number.lua')
+
+return {
+    assertIsNumber = function(a)
+        assert(isNumber(a))
+    end
+}
+
+end)
+
+
+__require__('index.lua')
+"
+`;
