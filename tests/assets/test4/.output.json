@@ -1,0 +1,13 @@
+{"suiteName":"","testName":"","totalTests":2,"failedTests":0,"output":[{"suiteName":"Print","testName":"print toSnapshot table","text":"{\
+	\"func\" = function: ec1bd8cb\
+	\"number\" = 2\
+	\"string\" = \"str\"\
+	\"subtable\" = {\
+		\"exists\" = true\
+	}\
+}","print":true,"fail":false},{"suiteName":"Print","testName":"print toSnapshot array","text":"{\
+	\"1\" = 1\
+	\"2\" = 2\
+	\"3\" = 3\
+	\"4\" = \"some string\"\
+}","print":true,"fail":false}]}

@@ -63,3 +63,20 @@ Array [
 `;
 
 exports[`test run tests with hooks 2`] = `undefined`;
+
+exports[`test run tests with print 1`] = `
+Array [
+  "[42m[37mPASS[39m[49m [32mPrint[39m",
+  "    • print() in print toSnapshot array",
+  "{	\\"1\\" = 1	\\"2\\" = 2	\\"3\\" = 3	\\"4\\" = \\"some string\\"}",
+  "",
+  "    • print() in print toSnapshot table",
+  "{	\\"func\\" = function: ec1bd8cb	\\"number\\" = 2	\\"string\\" = \\"str\\"	\\"subtable\\" = {		\\"exists\\" = true	}}",
+  "",
+  "",
+  "Total tests: 2",
+  "Failed tests: 0",
+]
+`;
+
+exports[`test run tests with print 2`] = `undefined`;

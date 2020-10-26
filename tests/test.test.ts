@@ -62,4 +62,24 @@ describe("test", () => {
 		expect(error).toMatchSnapshot();
 	});
 
+	test("run tests with print", async () => {
+		const outputLines = [];
+		let error;
+
+		try {
+			await runTest({
+				outputLines,
+				args: {
+					project: "./tests/assets/test4/project.json",
+				}
+			});
+		} catch (err) {
+			error = err;
+			console.error(err);
+		}
+
+		expect(outputLines).toMatchSnapshot();
+		expect(error).toMatchSnapshot();
+	});
+
 });

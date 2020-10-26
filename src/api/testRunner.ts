@@ -23,6 +23,7 @@ interface TestOutputEntry {
 	testName: string;
 	text: string;
 	fail: boolean;
+	print?: boolean;
 	diff?: TestDiff;
 }
 
@@ -96,6 +97,13 @@ function displayTests(output: TestOutput, result: string[]): string[] {
 							}
 						}
 					}
+				}
+
+				// Just printing text
+				if (entry.print) {
+					result.push(`    • print() in ${testName}`)
+					result.push(...entry.text.split("\n"));
+					result.push("")
 				}
 			}
 
