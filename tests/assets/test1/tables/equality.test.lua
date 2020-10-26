@@ -27,5 +27,13 @@ describe("Table equality", function()
         expect({ number = 2 }).toNot.toEqual({})
     end)
 
+    test("equal arrays", function()
+        expect({1, 2, 3}).toEqual({1, 2, 3})
+    end)
+
+    test("not equal arrays", function()
+        expect({1, 2, 3}).toNot.toEqual({1, 5})
+    end)
+
 end)
 
