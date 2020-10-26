@@ -243,7 +243,10 @@ function describe(sName, fImpl)
                 if (not bSuccess) then
                     local aTextColor = term.getTextColor()
                     term.setTextColor(colors.red)
-                    print("Error in " .. sHookName .. ":", sError)
+
+                    sError = "Error in hook " .. sName .. "." .. sHookName .. ": " .. sError .. "\n" .. debug.traceback()
+                    print(sError)
+
                     term.setTextColor(aTextColor)
 
                     table.insert(globalContext.output, {
@@ -269,7 +272,10 @@ function describe(sName, fImpl)
                 if (not stringEndsWith(sError, " ")) then
                     local aTextColor = term.getTextColor()
                     term.setTextColor(colors.red)
-                    print("Error in test:", sError)
+
+                    sError = "Error in test " .. sName .. "." .. tTest.name .. ": " .. sError .. "\n" .. debug.traceback()
+                    print(sError)
+
                     term.setTextColor(aTextColor)
 
                     table.insert(globalContext.output, {
@@ -375,7 +381,25 @@ function describe(sName, fImpl)
     })
 
     setfenv(fImpl, tTestEnv)
-    pcall(fImpl)
+
+    local bSuccess, sError = pcall(fImpl)
+
+    if (not bSuccess) then
+        local aTextColor = term.getTextColor()
+        term.setTextColor(colors.red)
+
+        sError = "Error in " .. sName .. ": " .. sError .. "\n" .. debug.traceback()
+        print(sError)
+
+        term.setTextColor(aTextColor)
+
+        table.insert(globalContext.output, {
+            suiteName = sName,
+            testName = "",
+            fail = true,
+            text = sError,
+        })
+    end
 
     table.insert(testSuites, tSuite)
 end

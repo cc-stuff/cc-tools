@@ -77,7 +77,7 @@ function displayTests(output: TestOutput, result: string[]): string[] {
 					failed = true;
 
 					result.push(colors.bold(colors.red(`    • ${testName}`)));
-					result.push(colors.red(entry.text));
+					result.push(...entry.text.replace(/\t/g, "\n\t").split("\n").map(l => colors.red(l)));
 					result.push("");
 
 					if (entry.diff) {
@@ -102,7 +102,7 @@ function displayTests(output: TestOutput, result: string[]): string[] {
 				// Just printing text
 				if (entry.print) {
 					result.push(`    • print() in ${testName}`)
-					result.push(...entry.text.split("\n"));
+					result.push(...entry.text.replace(/\t/g, "\n\t").split("\n"));
 					result.push("")
 				}
 			}
