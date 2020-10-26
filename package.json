@@ -5,7 +5,8 @@
 	"files": [
 		"dist",
 		"vendor",
-		"bin"
+		"bin",
+		"assets"
 	],
 	"bin": {
 		"ccbundle": "bin/bundle",

@@ -168,7 +168,7 @@ export async function test(options: TestOptions) {
 		// Preparing startup bundle
 		bundleProject({
 			args: {
-				entry: resolvePath("../assets/test-runner.lua", __dirname),
+				entry: resolvePath("../../assets/test-runner.lua", __dirname),
 				output: startupFileName,
 			}
 		});
