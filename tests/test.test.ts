@@ -3,12 +3,22 @@ import {test as runTest} from "../src/api";
 describe("test", () => {
 
 	test("run all tests", async () => {
-		const output = await runTest({
-			args: {
-				project: "./tests/assets/test1/project.json",
-			}
-		})
+		const outputLines = [];
+		let error;
 
-		expect(output).toMatchSnapshot();
+		try {
+			await runTest({
+				outputLines,
+				args: {
+					project: "./tests/assets/test1/project.json",
+				}
+			});
+		} catch (err) {
+			error = err;
+			console.error(err);
+		}
+
+		expect(outputLines).toMatchSnapshot();
+		expect(error).toMatchSnapshot();
 	});
 });

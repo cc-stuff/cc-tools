@@ -47,8 +47,7 @@ function randomPort(): number {
 	return 5000 + Math.round(Math.random() * 5000);
 }
 
-function displayTests(output: TestOutput): string[] {
-	const result: string[] = [];
+function displayTests(output: TestOutput, result: string[]): string[] {
 	const bySuite: Record<string, Record<string, TestOutputEntry[]>> = {};
 
 	for (const entry of output) {
@@ -196,14 +195,15 @@ export async function test(options: TestOptions) {
 		await instance.stop();
 
 		// Reading output.json
-		const testResult: TestResultContext = JSON.parse(fs.readFileSync(outputFileName, "utf-8"));
+		const testResultRaw = fs.readFileSync(outputFileName, "utf-8");
+		const testResult: TestResultContext = new Function("return " + testResultRaw)();
 
 		if (testResult.totalTests === 0) {
 			throw new Error("No tests found.");
 		}
 
 		// No failures, just display all run tests grouped by suite
-		outputLines = displayTests(testResult.output);
+		outputLines = displayTests(testResult.output, outputLines);
 
 		outputLines.push("");
 		outputLines.push(`Total tests: ${testResult.totalTests}`);
@@ -219,6 +219,4 @@ export async function test(options: TestOptions) {
 	}
 
 	removeTempBundles();
-
-	return outputLines;
 }

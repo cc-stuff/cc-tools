@@ -243,14 +243,14 @@ A standard assertion table has the following methods:
 In addition to that, a standard assertion table also has the following
 chaining combinators:
 
- * `notTo` &mdash; returns an inverted assertion table, meaning that
+ * `toNot` &mdash; returns an inverted assertion table, meaning that
  all it's assertions fail if the original assertion is true.
 
-A practical example with `notTo` would look like this:
+A practical example with `toNot` would look like this:
 
 ```lua
 expect(true).toBeTruthy() -- Will pass
-expect(true).notTo.toBeFalsy() -- Will also pass
+expect(true).toNot.toBeFalsy() -- Will also pass
 ```
 
 ## Contributing

@@ -20,11 +20,11 @@ describe("Table equality", function()
     end)
 
     test("not equal tables 1", function()
-        expect({}).toEqual({ number = 2 })
+        expect({}).toNot.toEqual({ number = 2 })
     end)
 
     test("not equal tables 2", function()
-        expect({ number = 2 }).toEqual({})
+        expect({ number = 2 }).toNot.toEqual({})
     end)
 
 end)

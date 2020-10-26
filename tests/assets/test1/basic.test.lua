@@ -13,5 +13,17 @@ describe("Basic", function()
         expect(2).toNot.toBeFalsy()
     end)
 
+    test("to be falsy", function()
+        expect(false).toBeFalsy()
+    end)
+
+    test("to be nil", function()
+        expect(nil).toBeNil()
+    end)
+
+    test("not to be nil", function()
+        expect({}).toNot.toBeNil()
+    end)
+
 end)
 

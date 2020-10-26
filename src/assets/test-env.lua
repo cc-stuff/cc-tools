@@ -70,7 +70,7 @@ local function toSnapshot(aValue, ...)
             local sResult = ""
 
             for i, sLine in ipairs(aResult) do
-                if (i == i) then
+                if (i == 1) then
                     sResult = sLine
                 else
                     sResult = sResult .. "\n" .. sLine
@@ -137,25 +137,25 @@ function expect(aValue, ...)
 
     local tExpectResult = {
         toBe = function(bValue)
-            context.assert(aValue == bValue, tostring(aValue) .. " to be " .. tostring(bValue))
+            context.assert(aValue == bValue, "expecting " .. tostring(aValue) .. " to be " .. tostring(bValue))
         end,
 
         toEqual = function(bValue)
             local tDiff = diff(toSnapshot(aValue), toSnapshot(bValue), "\n")
 
-            context.assert(tDiff.equals(), "values to match", tDiff)
+            context.assert(tDiff.equals(), "expecting values to match", tDiff)
         end,
 
         toBeTruthy = function(bValue)
-            context.assert(not not aValue, tostring(aValue) .. " to be truthy")
+            context.assert(not not aValue, "expecting " .. tostring(aValue) .. " to be truthy")
         end,
 
         toBeFalsy = function(bValue)
-            context.assert(not aValue, tostring(aValue) .. " to be falsy")
+            context.assert(not aValue, "expecting " .. tostring(aValue) .. " to be falsy")
         end,
 
         toBeNil = function(bValue)
-            context.assert(aValue == nil, tostring(aValue) .. " to be nil")
+            context.assert(aValue == nil, "expecting " .. tostring(aValue) .. " to be nil")
         end,
     }
 
@@ -167,13 +167,13 @@ function expect(aValue, ...)
                 local tResult = {}
 
                 setmetatable(tResult, {
-                    __index = function(_, sNegativeKey)
-                        if (sKey == "not") then
+                    __index = function(_1, sNegativeKey)
+                        if (sNegativeKey == "toNot") then
                             return nil
                         end
 
-                        return function(aValue)
-                            local bSuccess = pcall(expect(tNegativeContext)[sNegativeKey], aValue)
+                        return function(bValue)
+                            local bSuccess = pcall(expect(aValue, tNegativeContext)[sNegativeKey], bValue)
                             local sLastText = ""
 
                             for _, tEntry in ipairs(tNegativeContext.output) do
