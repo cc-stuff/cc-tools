@@ -9,6 +9,11 @@ if (type(setfenv) ~= "function") then
     end
 end
 
+-- http://lua-users.org/wiki/StringRecipes
+local function stringEndsWith(str, ending)
+    return ending == "" or str:sub(-#ending) == ending
+end
+
 local function toSnapshot(aValue, ...)
     local aResult = ""
 
@@ -120,7 +125,7 @@ local function createContext(sSuiteName, sTestName)
 
             table.insert(context.output, tEntry)
 
-            error(sText)
+            error("")
         end
 
         table.insert(context.output, tEntry)
@@ -187,7 +192,7 @@ function expect(aValue, ...)
 
                             -- We should negate the result, so success means failure
                             if (bSuccess) then
-                                error(sLastText)
+                                error("")
                             end
                         end
                     end
@@ -246,17 +251,19 @@ function describe(sName, fImpl)
             if (not bSuccess) then
                 globalContext.failedTests = globalContext.failedTests + 1
 
-                local aTextColor = term.getTextColor()
-                term.setTextColor(colors.red)
-                print("Error in test:", sError)
-                term.setTextColor(aTextColor)
+                if (not stringEndsWith(sError, " ")) then
+                    local aTextColor = term.getTextColor()
+                    term.setTextColor(colors.red)
+                    print("Error in test:", sError)
+                    term.setTextColor(aTextColor)
 
-                table.insert(globalContext.output, {
-                    suiteName = sName,
-                    testName = tTest.name,
-                    fail = true,
-                    text = sError,
-                })
+                    table.insert(globalContext.output, {
+                        suiteName = sName,
+                        testName = tTest.name,
+                        fail = true,
+                        text = sError,
+                    })
+                end
             end
 
             -- Copying entries to the global context
