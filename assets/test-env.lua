@@ -238,24 +238,27 @@ function describe(sName, fImpl)
         local runAll = function(sHookName, t)
             for _, f in ipairs(t) do
                 -- TODO: Async function?
-                local bSuccess, sError = pcall(f)
+                xpcall(
+                    function()
+                        return f()
+                    end,
+                    function(sError)
+                        local aTextColor = term.getTextColor()
+                        term.setTextColor(colors.red)
 
-                if (not bSuccess) then
-                    local aTextColor = term.getTextColor()
-                    term.setTextColor(colors.red)
+                        sError = "Error in hook " .. sName .. "." .. sHookName .. ": " .. sError .. "\n" .. debug.traceback()
+                        print(sError)
 
-                    sError = "Error in hook " .. sName .. "." .. sHookName .. ": " .. sError .. "\n" .. debug.traceback()
-                    print(sError)
+                        term.setTextColor(aTextColor)
 
-                    term.setTextColor(aTextColor)
-
-                    table.insert(globalContext.output, {
-                        suiteName = sName,
-                        testName = sName .. "." .. sHookName,
-                        fail = true,
-                        text = sError,
-                    })
-                end
+                        table.insert(globalContext.output, {
+                            suiteName = sName,
+                            testName = sName .. "." .. sHookName,
+                            fail = true,
+                            text = sError,
+                        })
+                    end
+                )
 
             end
         end
@@ -264,28 +267,31 @@ function describe(sName, fImpl)
             globalContext.totalTests = globalContext.totalTests + 1
 
             -- TODO: Async function?
-            local bSuccess, sError = pcall(tTest.impl)
+            xpcall(
+                function()
+                    return tTest.impl()
+                end,
+                function(sError)
+                    globalContext.failedTests = globalContext.failedTests + 1
 
-            if (not bSuccess) then
-                globalContext.failedTests = globalContext.failedTests + 1
+                    if (not stringEndsWith(sError, " ")) then
+                        local aTextColor = term.getTextColor()
+                        term.setTextColor(colors.red)
 
-                if (not stringEndsWith(sError, " ")) then
-                    local aTextColor = term.getTextColor()
-                    term.setTextColor(colors.red)
+                        sError = "Error in test " .. sName .. "." .. tTest.name .. ": " .. sError .. "\n" .. debug.traceback()
+                        print(sError)
 
-                    sError = "Error in test " .. sName .. "." .. tTest.name .. ": " .. sError .. "\n" .. debug.traceback()
-                    print(sError)
+                        term.setTextColor(aTextColor)
 
-                    term.setTextColor(aTextColor)
-
-                    table.insert(globalContext.output, {
-                        suiteName = sName,
-                        testName = tTest.name,
-                        fail = true,
-                        text = sError,
-                    })
+                        table.insert(globalContext.output, {
+                            suiteName = sName,
+                            testName = tTest.name,
+                            fail = true,
+                            text = sError,
+                        })
+                    end
                 end
-            end
+            )
 
             -- Copying entries to the global context
             for _, tEntry in ipairs(tTest.context.output) do
@@ -382,24 +388,27 @@ function describe(sName, fImpl)
 
     setfenv(fImpl, tTestEnv)
 
-    local bSuccess, sError = pcall(fImpl)
+    xpcall(
+        function()
+            return fImpl()
+        end,
+        function(sError)
+            local aTextColor = term.getTextColor()
+            term.setTextColor(colors.red)
 
-    if (not bSuccess) then
-        local aTextColor = term.getTextColor()
-        term.setTextColor(colors.red)
+            sError = "Error in " .. sName .. ": " .. sError .. "\n" .. debug.traceback()
+            print(sError)
 
-        sError = "Error in " .. sName .. ": " .. sError .. "\n" .. debug.traceback()
-        print(sError)
+            term.setTextColor(aTextColor)
 
-        term.setTextColor(aTextColor)
-
-        table.insert(globalContext.output, {
-            suiteName = sName,
-            testName = "",
-            fail = true,
-            text = sError,
-        })
-    end
+            table.insert(globalContext.output, {
+                suiteName = sName,
+                testName = "",
+                fail = true,
+                text = sError,
+            })
+        end
+    )
 
     table.insert(testSuites, tSuite)
 end
