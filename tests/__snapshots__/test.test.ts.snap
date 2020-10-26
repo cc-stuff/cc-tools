@@ -52,3 +52,14 @@ Array [
 `;
 
 exports[`test run all tests that fail 2`] = `[Error: 7 tests failed.]`;
+
+exports[`test run tests with hooks 1`] = `
+Array [
+  "[42m[37mPASS[39m[49m [32mHooks[39m",
+  "",
+  "Total tests: 1",
+  "Failed tests: 0",
+]
+`;
+
+exports[`test run tests with hooks 2`] = `undefined`;

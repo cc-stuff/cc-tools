@@ -283,7 +283,7 @@ function describe(sName, fImpl)
                     -- Running the test
                     runTest(tTest)
                     -- Running teardown
-                    runAll(tSuite.beforeEach)
+                    runAll(tSuite.afterEach)
                 end
             end
         end

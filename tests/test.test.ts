@@ -42,4 +42,24 @@ describe("test", () => {
 		expect(error).toMatchSnapshot();
 	});
 
+	test("run tests with hooks", async () => {
+		const outputLines = [];
+		let error;
+
+		try {
+			await runTest({
+				outputLines,
+				args: {
+					project: "./tests/assets/test3/project.json",
+				}
+			});
+		} catch (err) {
+			error = err;
+			console.error(err);
+		}
+
+		expect(outputLines).toMatchSnapshot();
+		expect(error).toMatchSnapshot();
+	});
+
 });
