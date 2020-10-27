@@ -1,6 +1,13 @@
 
 describe("cctools.fn", function()
 
+    local describeMock = cctools.fn()
+    local beforeMock
+
+    beforeAll(function()
+        beforeMock = cctools.fn()
+    end)
+
     test("without implementation", function()
         local fMock = cctools.fn()
 
@@ -32,6 +39,14 @@ describe("cctools.fn", function()
         fMock.clear()
 
         expect(fMock.calls).toEqual({})
+    end)
+
+    test("mock in hook", function()
+        describeMock(2)
+        beforeMock(3)
+
+        expect(describeMock.calls).toEqual({{2}})
+        expect(beforeMock.calls).toEqual({{3}})
     end)
 
 end)
