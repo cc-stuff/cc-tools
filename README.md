@@ -210,6 +210,30 @@ Arguments:
 
 Returns: `nil`.
 
+### cctools
+
+This global table is designed to contain less common helper methods
+so that they don't pollute the global environment.
+
+#### cctools.fn
+
+Creates a mock function that stores all arguments with which it was
+called.
+
+Arguments:
+
+ * `fImpl: function` &mdash; (optional) internal implementation,
+ the function to be called by the mock function.
+
+Returns: `table`.
+
+The table returned can be called as a normal function. It also has
+several fields:
+
+ * `calls: table` &mdash; contains a 2-dimensional list of arguments
+ that were ever passed to the mock;
+ * `clear()` &mdash; clears the list of calls.
+ 
 ### Assertion tables
 
 This testing framework supports behavior-driven

@@ -386,7 +386,37 @@ function describe(sName, fImpl)
                         print = true,
                         text = text,
                     })
-                end
+                end,
+
+                cctools = {
+                    fn = function(impl)
+                        local tMock = {
+                            calls = {},
+                        }
+
+                        tMock.clear = function()
+                            tMock.calls = {}
+                        end
+
+                        setmetatable(tMock, {
+                            __call = function(_, ...)
+                                local tArgs = {}
+
+                                for _, aArg in ipairs(arg) do
+                                    table.insert(tArgs, aArg)
+                                end
+
+                                table.insert(tMock.calls, tArgs)
+
+                                if (type(impl) == "function") then
+                                    return impl(table.unpack(arg))
+                                end
+                            end
+                        })
+
+                        return tMock
+                    end
+                },
             }
 
             setmetatable(tTestConcreteEnv, {
