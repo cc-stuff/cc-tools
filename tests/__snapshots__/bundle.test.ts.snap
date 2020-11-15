@@ -4,16 +4,90 @@ exports[`bundle project1 bundling 1`] = `
 "
 local __files__ = {}
 
-local function __require__(name)
-	return __files__[name]
+local function __require__(sName)
+	local moduleInfo = __files__[sName]
+
+	if (not moduleInfo) then
+		error(\\"Module not found: \\" .. tostring(sName))
+	end
+
+	return moduleInfo[2]
 end
 
-local function __define__(name, impl)
-	__files__[name] = impl()
+local function __define__(nLine, sName, fImpl)
+	local function strSplit(sStr, sDelimiter)
+		local tResult = {}
+		local nFrom = 1
+		local nDelimFrom, nDelimTo = string.find(sStr, sDelimiter, nFrom)
+
+		while nDelimFrom do
+			table.insert(tResult, string.sub(sStr, nFrom, nDelimFrom - 1))
+			nFrom = nDelimTo + 1
+			nDelimFrom, nDelimTo = string.find(sStr, sDelimiter, nFrom)
+		end
+
+		table.insert(tResult, string.sub(sStr, nFrom))
+
+		return tResult
+	end
+
+	local function strTrim(s)
+		return string.match(s, \\"^%s*(.-)%s*$\\")
+	end
+
+	local function findTrueSource(nLine)
+		local sModule
+		local nStart = 0
+
+		for sKey, tModuleInfo in pairs(__files__) do
+			if (tModuleInfo.line <= nLine and tModuleInfo.line > nStart) then
+				sModule = sKey
+				nStart = tModuleInfo.line
+			end
+		end
+
+		return sModule or \\"(unknown)\\", nLine - nStart
+	end
+
+	local bStatus, aModule = xpcall(fImpl, function(sError)
+		local sStack = debug.traceback()
+
+		-- TODO: Optimize performance
+		local tStack = strSplit(sStack, \\"\\\\n\\")
+		local sResultError = \\"Uncaught error: \\" .. tostring(sError) .. \\"\\\\n in module \\" .. sName .. \\":\\\\n\\"
+		local sCurrentFile
+
+		for i = 1, #tStack do
+			local sLine = strTrim(tStack[i])
+			local sFile, sLineNumber = table.unpack(strSplit(sLine, \\":\\"))
+
+			if (sCurrentFile == nil and type(sLineNumber) == \\"number\\") then
+				sCurrentFile = sFile
+			end
+
+			if (sFile == sCurrentFile) then
+				local sTrueFile, nTrueLine = findTrueSource(sLineNumber)
+
+				sLine = \\"\\\\(\\" .. sTrueFile .. \\":\\" .. tostring(nTrueLine) .. \\") \\" .. sLine
+			end
+
+			if (i < 10) then
+				sResultError = sResultError .. \\"\\\\n\\" .. sLine
+			end
+		end
+
+		return sResultError
+	end)
+
+	if (bStatus) then
+		__files__[sName] = {nLine, aModule}
+	else
+		error(aModule)
+	end
 end
 
 
-__define__('calc.lua', function ()
+__define__(88, 'calc.lua', function ()
 
 local function add(nA, nB)
     return nA + nB
@@ -25,7 +99,7 @@ return {
 
 end)
 
-__define__('index.lua', function ()
+__define__(100, 'index.lua', function ()
 local calc = __require__('calc.lua')
 local calc2 = __require__('calc.lua')
 
@@ -42,16 +116,90 @@ exports[`bundle project1 bundling with explicit args 1`] = `
 "
 local __files__ = {}
 
-local function __require__(name)
-	return __files__[name]
+local function __require__(sName)
+	local moduleInfo = __files__[sName]
+
+	if (not moduleInfo) then
+		error(\\"Module not found: \\" .. tostring(sName))
+	end
+
+	return moduleInfo[2]
 end
 
-local function __define__(name, impl)
-	__files__[name] = impl()
+local function __define__(nLine, sName, fImpl)
+	local function strSplit(sStr, sDelimiter)
+		local tResult = {}
+		local nFrom = 1
+		local nDelimFrom, nDelimTo = string.find(sStr, sDelimiter, nFrom)
+
+		while nDelimFrom do
+			table.insert(tResult, string.sub(sStr, nFrom, nDelimFrom - 1))
+			nFrom = nDelimTo + 1
+			nDelimFrom, nDelimTo = string.find(sStr, sDelimiter, nFrom)
+		end
+
+		table.insert(tResult, string.sub(sStr, nFrom))
+
+		return tResult
+	end
+
+	local function strTrim(s)
+		return string.match(s, \\"^%s*(.-)%s*$\\")
+	end
+
+	local function findTrueSource(nLine)
+		local sModule
+		local nStart = 0
+
+		for sKey, tModuleInfo in pairs(__files__) do
+			if (tModuleInfo.line <= nLine and tModuleInfo.line > nStart) then
+				sModule = sKey
+				nStart = tModuleInfo.line
+			end
+		end
+
+		return sModule or \\"(unknown)\\", nLine - nStart
+	end
+
+	local bStatus, aModule = xpcall(fImpl, function(sError)
+		local sStack = debug.traceback()
+
+		-- TODO: Optimize performance
+		local tStack = strSplit(sStack, \\"\\\\n\\")
+		local sResultError = \\"Uncaught error: \\" .. tostring(sError) .. \\"\\\\n in module \\" .. sName .. \\":\\\\n\\"
+		local sCurrentFile
+
+		for i = 1, #tStack do
+			local sLine = strTrim(tStack[i])
+			local sFile, sLineNumber = table.unpack(strSplit(sLine, \\":\\"))
+
+			if (sCurrentFile == nil and type(sLineNumber) == \\"number\\") then
+				sCurrentFile = sFile
+			end
+
+			if (sFile == sCurrentFile) then
+				local sTrueFile, nTrueLine = findTrueSource(sLineNumber)
+
+				sLine = \\"\\\\(\\" .. sTrueFile .. \\":\\" .. tostring(nTrueLine) .. \\") \\" .. sLine
+			end
+
+			if (i < 10) then
+				sResultError = sResultError .. \\"\\\\n\\" .. sLine
+			end
+		end
+
+		return sResultError
+	end)
+
+	if (bStatus) then
+		__files__[sName] = {nLine, aModule}
+	else
+		error(aModule)
+	end
 end
 
 
-__define__('calc.lua', function ()
+__define__(88, 'calc.lua', function ()
 
 local function add(nA, nB)
     return nA + nB
@@ -63,7 +211,7 @@ return {
 
 end)
 
-__define__('index.lua', function ()
+__define__(100, 'index.lua', function ()
 local calc = __require__('calc.lua')
 local calc2 = __require__('calc.lua')
 
@@ -80,16 +228,90 @@ exports[`bundle project1 bundling with noEmit 1`] = `
 "
 local __files__ = {}
 
-local function __require__(name)
-	return __files__[name]
+local function __require__(sName)
+	local moduleInfo = __files__[sName]
+
+	if (not moduleInfo) then
+		error(\\"Module not found: \\" .. tostring(sName))
+	end
+
+	return moduleInfo[2]
 end
 
-local function __define__(name, impl)
-	__files__[name] = impl()
+local function __define__(nLine, sName, fImpl)
+	local function strSplit(sStr, sDelimiter)
+		local tResult = {}
+		local nFrom = 1
+		local nDelimFrom, nDelimTo = string.find(sStr, sDelimiter, nFrom)
+
+		while nDelimFrom do
+			table.insert(tResult, string.sub(sStr, nFrom, nDelimFrom - 1))
+			nFrom = nDelimTo + 1
+			nDelimFrom, nDelimTo = string.find(sStr, sDelimiter, nFrom)
+		end
+
+		table.insert(tResult, string.sub(sStr, nFrom))
+
+		return tResult
+	end
+
+	local function strTrim(s)
+		return string.match(s, \\"^%s*(.-)%s*$\\")
+	end
+
+	local function findTrueSource(nLine)
+		local sModule
+		local nStart = 0
+
+		for sKey, tModuleInfo in pairs(__files__) do
+			if (tModuleInfo.line <= nLine and tModuleInfo.line > nStart) then
+				sModule = sKey
+				nStart = tModuleInfo.line
+			end
+		end
+
+		return sModule or \\"(unknown)\\", nLine - nStart
+	end
+
+	local bStatus, aModule = xpcall(fImpl, function(sError)
+		local sStack = debug.traceback()
+
+		-- TODO: Optimize performance
+		local tStack = strSplit(sStack, \\"\\\\n\\")
+		local sResultError = \\"Uncaught error: \\" .. tostring(sError) .. \\"\\\\n in module \\" .. sName .. \\":\\\\n\\"
+		local sCurrentFile
+
+		for i = 1, #tStack do
+			local sLine = strTrim(tStack[i])
+			local sFile, sLineNumber = table.unpack(strSplit(sLine, \\":\\"))
+
+			if (sCurrentFile == nil and type(sLineNumber) == \\"number\\") then
+				sCurrentFile = sFile
+			end
+
+			if (sFile == sCurrentFile) then
+				local sTrueFile, nTrueLine = findTrueSource(sLineNumber)
+
+				sLine = \\"\\\\(\\" .. sTrueFile .. \\":\\" .. tostring(nTrueLine) .. \\") \\" .. sLine
+			end
+
+			if (i < 10) then
+				sResultError = sResultError .. \\"\\\\n\\" .. sLine
+			end
+		end
+
+		return sResultError
+	end)
+
+	if (bStatus) then
+		__files__[sName] = {nLine, aModule}
+	else
+		error(aModule)
+	end
 end
 
 
-__define__('calc.lua', function ()
+__define__(88, 'calc.lua', function ()
 
 local function add(nA, nB)
     return nA + nB
@@ -101,7 +323,7 @@ return {
 
 end)
 
-__define__('index.lua', function ()
+__define__(100, 'index.lua', function ()
 local calc = __require__('calc.lua')
 local calc2 = __require__('calc.lua')
 
@@ -118,16 +340,90 @@ exports[`bundle project2 bundling with references 1`] = `
 "
 local __files__ = {}
 
-local function __require__(name)
-	return __files__[name]
+local function __require__(sName)
+	local moduleInfo = __files__[sName]
+
+	if (not moduleInfo) then
+		error(\\"Module not found: \\" .. tostring(sName))
+	end
+
+	return moduleInfo[2]
 end
 
-local function __define__(name, impl)
-	__files__[name] = impl()
+local function __define__(nLine, sName, fImpl)
+	local function strSplit(sStr, sDelimiter)
+		local tResult = {}
+		local nFrom = 1
+		local nDelimFrom, nDelimTo = string.find(sStr, sDelimiter, nFrom)
+
+		while nDelimFrom do
+			table.insert(tResult, string.sub(sStr, nFrom, nDelimFrom - 1))
+			nFrom = nDelimTo + 1
+			nDelimFrom, nDelimTo = string.find(sStr, sDelimiter, nFrom)
+		end
+
+		table.insert(tResult, string.sub(sStr, nFrom))
+
+		return tResult
+	end
+
+	local function strTrim(s)
+		return string.match(s, \\"^%s*(.-)%s*$\\")
+	end
+
+	local function findTrueSource(nLine)
+		local sModule
+		local nStart = 0
+
+		for sKey, tModuleInfo in pairs(__files__) do
+			if (tModuleInfo.line <= nLine and tModuleInfo.line > nStart) then
+				sModule = sKey
+				nStart = tModuleInfo.line
+			end
+		end
+
+		return sModule or \\"(unknown)\\", nLine - nStart
+	end
+
+	local bStatus, aModule = xpcall(fImpl, function(sError)
+		local sStack = debug.traceback()
+
+		-- TODO: Optimize performance
+		local tStack = strSplit(sStack, \\"\\\\n\\")
+		local sResultError = \\"Uncaught error: \\" .. tostring(sError) .. \\"\\\\n in module \\" .. sName .. \\":\\\\n\\"
+		local sCurrentFile
+
+		for i = 1, #tStack do
+			local sLine = strTrim(tStack[i])
+			local sFile, sLineNumber = table.unpack(strSplit(sLine, \\":\\"))
+
+			if (sCurrentFile == nil and type(sLineNumber) == \\"number\\") then
+				sCurrentFile = sFile
+			end
+
+			if (sFile == sCurrentFile) then
+				local sTrueFile, nTrueLine = findTrueSource(sLineNumber)
+
+				sLine = \\"\\\\(\\" .. sTrueFile .. \\":\\" .. tostring(nTrueLine) .. \\") \\" .. sLine
+			end
+
+			if (i < 10) then
+				sResultError = sResultError .. \\"\\\\n\\" .. sLine
+			end
+		end
+
+		return sResultError
+	end)
+
+	if (bStatus) then
+		__files__[sName] = {nLine, aModule}
+	else
+		error(aModule)
+	end
 end
 
 
-__define__('index.lua', function ()
+__define__(88, 'index.lua', function ()
 print(\\"It works!\\")
 
 end)
@@ -141,16 +437,90 @@ exports[`bundle project2 bundling with references 2`] = `
 "
 local __files__ = {}
 
-local function __require__(name)
-	return __files__[name]
+local function __require__(sName)
+	local moduleInfo = __files__[sName]
+
+	if (not moduleInfo) then
+		error(\\"Module not found: \\" .. tostring(sName))
+	end
+
+	return moduleInfo[2]
 end
 
-local function __define__(name, impl)
-	__files__[name] = impl()
+local function __define__(nLine, sName, fImpl)
+	local function strSplit(sStr, sDelimiter)
+		local tResult = {}
+		local nFrom = 1
+		local nDelimFrom, nDelimTo = string.find(sStr, sDelimiter, nFrom)
+
+		while nDelimFrom do
+			table.insert(tResult, string.sub(sStr, nFrom, nDelimFrom - 1))
+			nFrom = nDelimTo + 1
+			nDelimFrom, nDelimTo = string.find(sStr, sDelimiter, nFrom)
+		end
+
+		table.insert(tResult, string.sub(sStr, nFrom))
+
+		return tResult
+	end
+
+	local function strTrim(s)
+		return string.match(s, \\"^%s*(.-)%s*$\\")
+	end
+
+	local function findTrueSource(nLine)
+		local sModule
+		local nStart = 0
+
+		for sKey, tModuleInfo in pairs(__files__) do
+			if (tModuleInfo.line <= nLine and tModuleInfo.line > nStart) then
+				sModule = sKey
+				nStart = tModuleInfo.line
+			end
+		end
+
+		return sModule or \\"(unknown)\\", nLine - nStart
+	end
+
+	local bStatus, aModule = xpcall(fImpl, function(sError)
+		local sStack = debug.traceback()
+
+		-- TODO: Optimize performance
+		local tStack = strSplit(sStack, \\"\\\\n\\")
+		local sResultError = \\"Uncaught error: \\" .. tostring(sError) .. \\"\\\\n in module \\" .. sName .. \\":\\\\n\\"
+		local sCurrentFile
+
+		for i = 1, #tStack do
+			local sLine = strTrim(tStack[i])
+			local sFile, sLineNumber = table.unpack(strSplit(sLine, \\":\\"))
+
+			if (sCurrentFile == nil and type(sLineNumber) == \\"number\\") then
+				sCurrentFile = sFile
+			end
+
+			if (sFile == sCurrentFile) then
+				local sTrueFile, nTrueLine = findTrueSource(sLineNumber)
+
+				sLine = \\"\\\\(\\" .. sTrueFile .. \\":\\" .. tostring(nTrueLine) .. \\") \\" .. sLine
+			end
+
+			if (i < 10) then
+				sResultError = sResultError .. \\"\\\\n\\" .. sLine
+			end
+		end
+
+		return sResultError
+	end)
+
+	if (bStatus) then
+		__files__[sName] = {nLine, aModule}
+	else
+		error(aModule)
+	end
 end
 
 
-__define__('is-number.lua', function ()
+__define__(88, 'is-number.lua', function ()
 
 local function isNumber(a)
     return type(a) == \\"number\\"
@@ -160,7 +530,7 @@ return isNumber
 
 end)
 
-__define__('index.lua', function ()
+__define__(98, 'index.lua', function ()
 local isNumber = __require__('is-number.lua')
 
 return {
