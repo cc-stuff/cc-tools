@@ -14,6 +14,7 @@ interface Project {
 	config: CCBundleConfig;
 	rootDir: string;
 	files: Record<string, File>;
+	bundleStream: BundleStream;
 }
 
 interface File {
@@ -25,12 +26,86 @@ interface File {
 const bundleTemplate = (body, entryModuleName) => `
 local __files__ = {}
 
-local function __require__(name)
-	return __files__[name]
+local function __require__(sName)
+	local moduleInfo = __files__[sName]
+
+	if (not moduleInfo) then
+		error("Module not found: " .. tostring(sName))
+	end
+
+	return moduleInfo[2]
 end
 
-local function __define__(name, impl)
-	__files__[name] = impl()
+local function __define__(nLine, sName, fImpl)
+	local function strSplit(sStr, sDelimiter)
+		local tResult = {}
+		local nFrom = 1
+		local nDelimFrom, nDelimTo = string.find(sStr, sDelimiter, nFrom)
+
+		while nDelimFrom do
+			table.insert(tResult, string.sub(sStr, nFrom, nDelimFrom - 1))
+			nFrom = nDelimTo + 1
+			nDelimFrom, nDelimTo = string.find(sStr, sDelimiter, nFrom)
+		end
+
+		table.insert(tResult, string.sub(sStr, nFrom))
+
+		return tResult
+	end
+
+	local function strTrim(s)
+		return string.match(s, "^%s*(.-)%s*$")
+	end
+
+	local function findTrueSource(nLine)
+		local sModule
+		local nStart = 0
+
+		for sKey, tModuleInfo in pairs(__files__) do
+			if (tModuleInfo.line <= nLine and tModuleInfo.line > nStart) then
+				sModule = sKey
+				nStart = tModuleInfo.line
+			end
+		end
+
+		return sModule or "(unknown)", nLine - nStart
+	end
+
+	local bStatus, aModule = xpcall(fImpl, function(sError)
+		local sStack = debug.traceback()
+
+		-- TODO: Optimize performance
+		local tStack = strSplit(sStack, "\\n")
+		local sResultError = "Uncaught error: " .. tostring(sError) .. "\\n in module " .. sName .. ":\\n"
+		local sCurrentFile
+
+		for i = 1, #tStack do
+			local sLine = strTrim(tStack[i])
+			local sFile, sLineNumber = table.unpack(strSplit(sLine, ":"))
+
+			if (sCurrentFile == nil and type(sLineNumber) == "number") then
+				sCurrentFile = sFile
+			end
+
+			if (sFile == sCurrentFile) then
+				local sTrueFile, nTrueLine = findTrueSource(sLineNumber)
+
+				sLine = "\\(" .. sTrueFile .. ":" .. tostring(nTrueLine) .. ") " .. sLine
+			end
+
+			if (i < 10) then
+				sResultError = sResultError .. "\\n" .. sLine
+			end
+		end
+
+		return sResultError
+	end)
+
+	if (bStatus) then
+		__files__[sName] = {nLine, aModule}
+	else
+		error(aModule)
+	end
 end
 
 ${body}
@@ -38,11 +113,44 @@ ${body}
 __require__('${entryModuleName}')
 `;
 
-const defineTemplate = (name, content) => `
-__define__('${name}', function ()
+const defineTemplate = (line: number, name: string, content: string) => `
+__define__(${line}, '${name}', function ()
 ${content}
 end)
 `;
+
+class BundleStream {
+	private _line: number = 0;
+	private _chunks: string[] = [];
+
+	getLine(): number {
+		return this._line;
+	}
+
+	write(body: string) {
+		this._chunks.push(body);
+		this._line += (body.match(/\n/g) || []).length;
+	}
+
+	writeHeader() {
+		const [body] = bundleTemplate("%__body__%", "").split("%__body__%")
+		this.write(body);
+	}
+
+	writeFooter(entryModuleName: string) {
+		const [_, body] = bundleTemplate("%__body__%", entryModuleName).split("%__body__%")
+		this.write(body);
+	}
+
+	writeModule(name: string, content: string) {
+		// TODO: Fix magic number
+		this.write(defineTemplate(this.getLine() + 3, name, content));
+	}
+
+	toString(): string {
+		return this._chunks.join("");
+	}
+}
 
 const requireTemplate = name => `__require__('${name}')`;
 
@@ -64,7 +172,7 @@ function requireFile(project: Project, parent: File, relativeFileName: string): 
 
 	expandRequires(file, project);
 
-	file.source = defineTemplate(file.moduleName, file.source);
+	project.bundleStream.writeModule(file.moduleName, file.source);
 	project.files[absPath] = file;
 
 	return file;
@@ -111,6 +219,7 @@ export function bundleProject(options: BundleProjectOptions) {
 		},
 		rootDir: process.cwd(),
 		files: {},
+		bundleStream: new BundleStream(),
 	}
 
 	// Loading the config from the file
@@ -141,22 +250,21 @@ export function bundleProject(options: BundleProjectOptions) {
 		moduleName: '',
 	}
 
+	// Writing bundle header
+	project.bundleStream.writeHeader();
+
 	// Requiring entry file
 	const entryFile = requireFile(project, headerFile, path.basename(project.config.entry));
 
-	// Creating bundle source
-	const bundleSource = bundleTemplate(
-		Object
-			.values(project.files)
-			.map(file => file.source)
-			.join(''),
-		entryFile.moduleName,
-	);
+	// Writing bundle footer
+	project.bundleStream.writeFooter(entryFile.moduleName);
 
 	// Validate that it's eiter noEmit or references but never both
 	if (noEmit && project.config.references) {
 		throw new Error("noEmit can apply only to projects without references")
 	}
+
+	const bundleSource = project.bundleStream.toString();
 
 	// Writing bundle to file
 	if (!noEmit) {

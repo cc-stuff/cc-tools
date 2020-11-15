@@ -1,11 +1,18 @@
 
+local function doStuff()
+    print("Output from outside test")
+end
+
 describe("Print", function()
+
+    beforeEach(function()
+        print("works in a hook")
+    end)
 
     test("print toSnapshot table", function()
         print(toSnapshot({
             number = 2,
             string = "str",
-            func = print,
             subtable = {
                 exists = true,
             },
@@ -22,6 +29,11 @@ describe("Print", function()
         print(toSnapshot({
             1, 2, string = "str", 5
         }))
+    end)
+
+    test("print captures global output", function()
+        doStuff()
+        print.original("PRINT")
     end)
 
 end)

@@ -9,6 +9,34 @@ if (type(setfenv) ~= "function") then
     end
 end
 
+-- print() redirect
+(function ()
+    local originalPrint = print
+
+    local printAPI = {
+        current = originalPrint,
+        original = originalPrint,
+    }
+
+    printAPI.redirect = function(fNewPrint)
+        if (fNewPrint ~= nil) then
+            printAPI.current = fNewPrint
+        end
+    end
+
+    printAPI.restore = function()
+        printAPI.current = originalPrint
+    end
+
+    setmetatable(printAPI, {
+        __call = function(_, ...)
+            return printAPI.current(table.unpack(arg))
+        end
+    })
+
+    print = printAPI
+end)()
+
 -- http://lua-users.org/wiki/StringRecipes
 local function stringEndsWith(str, ending)
     return ending == "" or str:sub(-#ending) == ending
@@ -286,7 +314,10 @@ function describe(sName, fImpl)
     end
 
     tSuite.run = function(tArg)
-        local runAll = function(sHookName, t)
+        local runAll = function(tTest, sHookName, t)
+            -- Swapping global print() to capture all output
+            print.redirect(tTest.print)
+
             for _, f in ipairs(t) do
                 -- TODO: Async function?
                 xpcall(
@@ -294,6 +325,9 @@ function describe(sName, fImpl)
                         return f()
                     end,
                     function(sError)
+                        -- Swapping print() back
+                        print.restore()
+
                         local aTextColor = term.getTextColor()
                         term.setTextColor(colors.red)
 
@@ -310,12 +344,17 @@ function describe(sName, fImpl)
                         })
                     end
                 )
-
             end
+
+            -- Swapping print() back
+            print.restore()
         end
 
         local runTest = function(tTest)
             globalContext.totalTests = globalContext.totalTests + 1
+
+            -- Swapping global print() to capture all output
+            print.redirect(tTest.print)
 
             -- TODO: Async function?
             xpcall(
@@ -324,6 +363,9 @@ function describe(sName, fImpl)
                 end,
                 function(sError)
                     globalContext.failedTests = globalContext.failedTests + 1
+
+                    -- Swapping print() back
+                    print.restore()
 
                     if (not stringEndsWith(sError, " ")) then
                         local aTextColor = term.getTextColor()
@@ -344,6 +386,9 @@ function describe(sName, fImpl)
                 end
             )
 
+            -- Swapping print() back
+            print.restore()
+
             -- Copying entries to the global context
             for _, tEntry in ipairs(tTest.context.output) do
                 table.insert(globalContext.output, tEntry)
@@ -351,23 +396,23 @@ function describe(sName, fImpl)
         end
 
         -- Running suite setup
-        runAll("beforeAll", tSuite.beforeAll)
+        runAll({}, "beforeAll", tSuite.beforeAll)
 
         for _1, sName in ipairs(tArg) do
             for _2, tTest in ipairs(tSuite.tests) do
                 if (tTest.name == sName) then
                     -- Running setup
-                    runAll("beforeEach", tSuite.beforeEach)
+                    runAll(tTest, "beforeEach", tSuite.beforeEach)
                     -- Running the test
                     runTest(tTest)
                     -- Running teardown
-                    runAll("afterEach", tSuite.afterEach)
+                    runAll(tTest, "afterEach", tSuite.afterEach)
                 end
             end
         end
 
         -- Running suite teardown
-        runAll("afterAll", tSuite.afterAll)
+        runAll({}, "afterAll", tSuite.afterAll)
     end
 
     local tTestEnv = {
@@ -395,29 +440,29 @@ function describe(sName, fImpl)
                 expect = function(aValue)
                     return expect(aValue, tTestContext)
                 end,
-
-                print = function(...)
-                    print("Print:", table.unpack(arg))
-
-                    local text = ""
-
-                    for i, aPart in ipairs(arg) do
-                        text = text .. tostring(aPart)
-
-                        if (i ~= #arg) then
-                            text = text .. " "
-                        end
-                    end
-
-                    table.insert(globalContext.output, {
-                        suiteName = sName,
-                        testName = sTestName,
-                        fail = false,
-                        print = true,
-                        text = text,
-                    })
-                end,
             }
+
+            local testPrint = function(...)
+                print.original("Print:", table.unpack(arg))
+
+                local text = ""
+
+                for i, aPart in ipairs(arg) do
+                    text = text .. tostring(aPart)
+
+                    if (i ~= #arg) then
+                        text = text .. " "
+                    end
+                end
+
+                table.insert(globalContext.output, {
+                    suiteName = sName,
+                    testName = sTestName,
+                    fail = false,
+                    print = true,
+                    text = text,
+                })
+            end
 
             setmetatable(tTestConcreteEnv, {
                 __index = _ENV
@@ -428,6 +473,8 @@ function describe(sName, fImpl)
             table.insert(tSuite.tests, {
                 name = sTestName,
                 context = tTestContext,
+                env = tTestConcreteEnv,
+                print = testPrint,
                 impl = fTestImpl
             })
         end,
