@@ -545,3 +545,121 @@ end)
 __require__('index.lua')
 "
 `;
+
+exports[`bundle project3 bundling with macros 1`] = `
+"
+local __files__ = {}
+
+local function __require__(sName)
+	local moduleInfo = __files__[sName]
+
+	if (not moduleInfo) then
+		error(\\"Module not found: \\" .. tostring(sName))
+	end
+
+	return moduleInfo[2]
+end
+
+local function __define__(nLine, sName, fImpl)
+	local function strSplit(sStr, sDelimiter)
+		local tResult = {}
+		local nFrom = 1
+		local nDelimFrom, nDelimTo = string.find(sStr, sDelimiter, nFrom)
+
+		while nDelimFrom do
+			table.insert(tResult, string.sub(sStr, nFrom, nDelimFrom - 1))
+			nFrom = nDelimTo + 1
+			nDelimFrom, nDelimTo = string.find(sStr, sDelimiter, nFrom)
+		end
+
+		table.insert(tResult, string.sub(sStr, nFrom))
+
+		return tResult
+	end
+
+	local function strTrim(s)
+		return string.match(s, \\"^%s*(.-)%s*$\\")
+	end
+
+	local function findTrueSource(nLine)
+		local sModule
+		local nStart = 0
+
+		for sKey, tModuleInfo in pairs(__files__) do
+			if (tModuleInfo.line <= nLine and tModuleInfo.line > nStart) then
+				sModule = sKey
+				nStart = tModuleInfo.line
+			end
+		end
+
+		return sModule or \\"(unknown)\\", nLine - nStart
+	end
+
+	local bStatus, aModule = xpcall(fImpl, function(sError)
+		local sStack = debug.traceback()
+
+		-- TODO: Optimize performance
+		local tStack = strSplit(sStack, \\"\\\\n\\")
+		local sResultError = \\"Uncaught error: \\" .. tostring(sError) .. \\"\\\\n in module \\" .. sName .. \\":\\\\n\\"
+		local sCurrentFile
+
+		for i = 1, #tStack do
+			local sLine = strTrim(tStack[i])
+			local sFile, sLineNumber = table.unpack(strSplit(sLine, \\":\\"))
+
+			if (sCurrentFile == nil and type(sLineNumber) == \\"number\\") then
+				sCurrentFile = sFile
+			end
+
+			if (sFile == sCurrentFile) then
+				local sTrueFile, nTrueLine = findTrueSource(sLineNumber)
+
+				sLine = \\"\\\\(\\" .. sTrueFile .. \\":\\" .. tostring(nTrueLine) .. \\") \\" .. sLine
+			end
+
+			if (i < 10) then
+				sResultError = sResultError .. \\"\\\\n\\" .. sLine
+			end
+		end
+
+		return sResultError
+	end)
+
+	if (bStatus) then
+		__files__[sName] = {nLine, aModule}
+	else
+		error(aModule)
+	end
+end
+
+
+__define__(88, 'platform/win32.lua', function ()
+
+return {
+    print = win32.print
+}
+
+end)
+
+__define__(96, 'platform/index.lua', function ()
+--
+local platform = __require__('platform/win32.lua')
+--
+
+--
+end)
+
+__define__(104, 'index.lua', function ()
+--
+--
+
+local platform = __require__('platform/index.lua')
+
+platform.print(\\"Pretty print: \\" .. tostring(\\"It works!\\") .. \\"\\\\n\\")
+
+end)
+
+
+__require__('index.lua')
+"
+`;

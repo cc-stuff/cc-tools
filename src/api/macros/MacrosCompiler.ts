@@ -33,7 +33,7 @@ export class MacrosCompiler extends MacrosParser {
 
 		for (const name of Object.keys(this._defined)) {
 			result = result.replace(
-				new RegExp(`(?<execName>${name})\\s*(?<execArgs>\\(.*\\))?`, "gm"),
+				new RegExp(`(?<execName>${name})\\s*(?<execArgs>\\(.+?\\))?`, "gm"),
 				(value, name, argsRaw) => {
 					const args = parseArgs(argsRaw);
 

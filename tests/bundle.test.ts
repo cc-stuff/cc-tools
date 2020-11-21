@@ -7,6 +7,7 @@ describe("bundle", () => {
 	beforeEach(() => {
 		clearDist("./tests/assets/project1/dist")
 		clearDist("./tests/assets/project2/dist")
+		clearDist("./tests/assets/project3/dist")
 	});
 
 	test("project1 bundling", () => {
@@ -54,6 +55,16 @@ describe("bundle", () => {
 
 		expect(
 			fs.readFileSync("./tests/assets/project2/dist/validator.lua", "utf-8")
+		).toMatchSnapshot();
+	});
+
+	test("project3 bundling with macros", () => {
+		bundleProject({
+			projectFile: "./tests/assets/project3/project.json"
+		});
+
+		expect(
+			fs.readFileSync("./tests/assets/project3/dist/project3.lua", "utf-8")
 		).toMatchSnapshot();
 	});
 

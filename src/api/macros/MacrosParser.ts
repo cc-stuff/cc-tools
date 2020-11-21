@@ -37,8 +37,7 @@ export function parseArgs(argsSrg: string | unknown): string[] {
 	return args;
 }
 
-// const R_TOKENS = /#(?<op>define|undef|ifdef|ifndef|endif)\s*(?<name>[\w]+)?\s*(?<args>\(.*\))?(?<value>.*)/gm;
-const R_TOKENS = /#(?<op>define|undef|ifdef|ifndef|endif)[\t ]*(?<name>[\w]+)?[\t ]*(?<args>\(.*\))?[\t ]*(?<value>.*)?/gm;
+const R_TOKENS = /#(?<op>define|undef|ifdef|ifndef|endif)[\t ]*(?<name>[\w]+)?[\t ]*(?<args>\(.+?\))?[\t ]*(?<value>.*)?/gm;
 
 export abstract class MacrosParser {
 	protected abstract ondefine(start: number, end: number, name: string, args: string[], value: string);

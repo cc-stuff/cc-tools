@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import {formatFileSize} from "../common/formatFileSize";
 import {assertIsString} from "../common/assertIsString";
 import {resolvePath} from "../common/resolvePath";
+import {MacrosCompiler} from "./macros/MacrosCompiler";
 
 interface CCBundleConfig {
 	entry: string;
@@ -15,6 +16,7 @@ interface Project {
 	rootDir: string;
 	files: Record<string, File>;
 	bundleStream: BundleStream;
+	macrosCompiler: MacrosCompiler;
 }
 
 interface File {
@@ -170,6 +172,8 @@ function requireFile(project: Project, parent: File, relativeFileName: string): 
 			.replace(/\\/g, "/"),
 	}
 
+	file.source = project.macrosCompiler.compile(file.source);
+
 	expandRequires(file, project);
 
 	project.bundleStream.writeModule(file.moduleName, file.source);
@@ -220,6 +224,7 @@ export function bundleProject(options: BundleProjectOptions) {
 		rootDir: process.cwd(),
 		files: {},
 		bundleStream: new BundleStream(),
+		macrosCompiler: new MacrosCompiler(),
 	}
 
 	// Loading the config from the file

@@ -28,7 +28,7 @@ describe("MacrosParser", () => {
 		parser.consumeString("#define map(x, y) [x, y]\nmap(13, 27)");
 
 		expect(parser.ondefine.mock.calls).toEqual([
-			[0, 24, "map", ["x", "y"], " [x, y]"],
+			[0, 24, "map", ["x", "y"], "[x, y]"],
 		]);
 	});
 

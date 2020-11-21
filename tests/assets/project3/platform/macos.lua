@@ -1,0 +1,4 @@
+
+return {
+    print = macos.print
+}
